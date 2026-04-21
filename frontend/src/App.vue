@@ -5,6 +5,7 @@
         <h1>HealthCare Portal</h1>
       </div>
       <nav class="nav-links" v-if="isLoggedIn">
+        <RouterLink to="/map" class="nav-btn">Ver Mapa</RouterLink>
         <button class="logout-btn" @click="handleLogout">Cerrar Sesión</button>
       </nav>
     </header>
@@ -73,6 +74,26 @@ body {
   color: var(--primary-color);
   font-weight: 800;
   letter-spacing: -0.5px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.nav-btn {
+  background-color: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background-color: var(--primary-hover);
 }
 
 .logout-btn {

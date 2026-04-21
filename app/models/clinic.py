@@ -11,6 +11,13 @@ class MedicalCenter(Base):
     location = Column(Geography(geometry_type='POINT', srid=4326), nullable=True)
     phone = Column(String(20), nullable=True)
     
+    @property
+    def location_wkt(self):
+        from geoalchemy2.shape import to_shape
+        if self.location is not None:
+            return to_shape(self.location).wkt
+        return None
+    
     appointments = relationship("Appointment", back_populates="center", cascade="all, delete-orphan")
 
 class Schedule(Base):

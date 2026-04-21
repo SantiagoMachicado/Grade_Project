@@ -68,12 +68,12 @@ const handleLogin = async () => {
 
     // Redirección según rol
     if (payload.role === 'medico') {
-      router.push('/doctor-dashboard')
+      router.push('/doctor/dashboard')
     } else if (payload.role === 'admin') {
       router.push('/admin-dashboard')
     } else {
       // Por defecto o paciente
-      router.push('/patient-dashboard')
+      router.push('/patient/dashboard')
     }
     
   } catch (error) {

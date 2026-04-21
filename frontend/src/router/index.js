@@ -1,8 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
-import PatientDashboard from '../views/PatientDashboard.vue'
-import DoctorDashboard from '../views/DoctorDashboard.vue'
+import PatientLayout from '../views/patient/PatientLayout.vue'
+import PatientHome from '../views/patient/PatientHome.vue'
+import PatientAppointments from '../views/patient/PatientAppointments.vue'
+import PatientProfile from '../views/patient/PatientProfile.vue'
+import DoctorLayout from '../views/doctor/DoctorLayout.vue'
+import DoctorHome from '../views/doctor/DoctorHome.vue'
+import DoctorAgenda from '../views/doctor/DoctorAgenda.vue'
+import DoctorPatients from '../views/doctor/DoctorPatients.vue'
+import DoctorReports from '../views/doctor/DoctorReports.vue'
+import DoctorSettings from '../views/doctor/DoctorSettings.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
 import ChatView from '../views/ChatView.vue'
 
@@ -24,16 +32,26 @@ const router = createRouter({
       component: RegisterView
     },
     {
-      path: '/patient-dashboard',
-      name: 'patient-dashboard',
-      component: PatientDashboard,
-      meta: { requiresAuth: true, role: 'paciente' }
+      path: '/patient',
+      component: PatientLayout,
+      meta: { requiresAuth: true, role: 'paciente' },
+      children: [
+        { path: 'dashboard', name: 'patient-dashboard', component: PatientHome },
+        { path: 'appointments', name: 'patient-appointments', component: PatientAppointments },
+        { path: 'profile', name: 'patient-profile', component: PatientProfile }
+      ]
     },
     {
-      path: '/doctor-dashboard',
-      name: 'doctor-dashboard',
-      component: DoctorDashboard,
-      meta: { requiresAuth: true, role: 'medico' }
+      path: '/doctor',
+      component: DoctorLayout,
+      meta: { requiresAuth: true, role: 'medico' },
+      children: [
+        { path: 'dashboard', name: 'doctor-dashboard', component: DoctorHome },
+        { path: 'agenda', name: 'doctor-agenda', component: DoctorAgenda },
+        { path: 'patients', name: 'doctor-patients', component: DoctorPatients },
+        { path: 'reports', name: 'doctor-reports', component: DoctorReports },
+        { path: 'settings', name: 'doctor-settings', component: DoctorSettings }
+      ]
     },
     {
       path: '/admin-dashboard',
@@ -45,6 +63,12 @@ const router = createRouter({
       path: '/chat',
       name: 'chat',
       component: ChatView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/map',
+      name: 'map',
+      component: () => import('../views/ClinicsMapView.vue'),
       meta: { requiresAuth: true }
     }
   ]
@@ -71,8 +95,8 @@ router.beforeEach((to, from) => {
     return '/login'
   } else if ((to.path === '/login' || to.path === '/register') && token) {
     // If logged in already, send to correct dashboard
-    if (userRole === 'paciente') return '/patient-dashboard'
-    else if (userRole === 'medico') return '/doctor-dashboard'
+    if (userRole === 'paciente') return '/patient/dashboard'
+    else if (userRole === 'medico') return '/doctor/dashboard'
     else if (userRole === 'admin') return '/admin-dashboard'
     else return '/'
   }

@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func
 from fastapi import HTTPException
 from app.models.clinic import MedicalCenter, Schedule
 from app.schemas.clinic import MedicalCenterCreate, MedicalCenterUpdate, ScheduleCreate, ScheduleUpdate
