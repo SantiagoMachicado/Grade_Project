@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.api.deps import get_current_user, get_current_patient
 from app.crud import crud_appointment
-from app.schemas.appointment import AppointmentCreate, AppointmentUpdateStatus, AppointmentResponse
+from app.schemas.appointment import AppointmentCreate, AppointmentUpdateStatus, AppointmentResponse, AgendaSlotResponse
 from app.models.user import User, Patient
 
 router = APIRouter()
@@ -17,6 +17,15 @@ async def create_appointment_endpoint(
     current_patient: Patient = Depends(get_current_patient)
 ):
     return await crud_appointment.create_appointment(db=db, appointment=appointment_in, patient_id=current_patient.user_id)
+
+@router.put("/{appointment_id}", response_model=AppointmentResponse)
+async def update_appointment_endpoint(
+    appointment_id: int,
+    appointment_in: AppointmentCreate,
+    db: AsyncSession = Depends(get_db),
+    current_patient: Patient = Depends(get_current_patient)
+):
+    return await crud_appointment.update_appointment(db=db, appointment_id=appointment_id, appointment=appointment_in, patient_id=current_patient.user_id)
 
 @router.get("/patient/{patient_id}", response_model=List[AppointmentResponse])
 async def read_patient_appointments(
@@ -35,6 +44,15 @@ async def read_doctor_appointments(
     current_user: User = Depends(get_current_user)
 ):
     return await crud_appointment.get_appointments_by_doctor(db, doctor_id=doctor_id, skip=skip, limit=limit)
+
+@router.get("/doctor/{doctor_id}/agenda", response_model=List[AgendaSlotResponse])
+async def read_doctor_agenda(
+    doctor_id: int,
+    date: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return await crud_appointment.get_doctor_agenda(db, doctor_id=doctor_id, target_date=date)
 
 @router.patch("/{appointment_id}/status", response_model=AppointmentResponse)
 async def update_appointment_status_endpoint(

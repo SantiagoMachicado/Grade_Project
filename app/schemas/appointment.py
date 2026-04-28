@@ -27,3 +27,14 @@ class AppointmentResponse(AppointmentBase):
     doctor: Optional[DoctorResponse] = None
     center: Optional[MedicalCenterResponse] = None
     model_config = {"from_attributes": True}
+
+import enum
+class AgendaSlotType(str, enum.Enum):
+    AVAILABLE = "available"
+    APPOINTMENT = "appointment"
+
+class AgendaSlotResponse(BaseModel):
+    time: str
+    type: AgendaSlotType
+    center: Optional[MedicalCenterResponse] = None
+    appointment: Optional[AppointmentResponse] = None

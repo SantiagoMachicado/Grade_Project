@@ -1,7 +1,11 @@
 <template>
-  <div class="chat-container glass-card">
+  <div class="standalone-wrapper">
+    <div class="chat-container glass-card">
     <div class="chat-header">
-      <h2>Asistente de Salud Virtual</h2>
+      <div class="title-row">
+        <button @click="$router.go(-1)" class="back-btn">← Volver</button>
+        <h2>Asistente de Salud Virtual</h2>
+      </div>
       <p>Consultas y ayuda inteligente (Gemini 2.5 Flash)</p>
     </div>
 
@@ -38,12 +42,16 @@
         Enviar
       </button>
     </form>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
+
+const router = useRouter()
 
 // La memoria se almacena sólo en la sesión del cliente por simplicidad del prototipo
 const localHistory = ref([
@@ -92,7 +100,24 @@ const sendMessage = async () => {
     })
 
     // 3. Añadir la respuesta de la IA a la memoria local y vista
-    localHistory.value.push({ role: 'assistant', content: response.data.response })
+    let aiResponse = response.data.response;
+    let targetSpecialty = null;
+    
+    const actionRegex = /\[ACTION:MAP:(.*?)\]/i;
+    const match = aiResponse.match(actionRegex);
+    if (match) {
+      targetSpecialty = match[1].trim();
+      // Remove the action tag from the visible response
+      aiResponse = aiResponse.replace(actionRegex, '').trim();
+    }
+
+    localHistory.value.push({ role: 'assistant', content: aiResponse })
+    
+    if (targetSpecialty) {
+      setTimeout(() => {
+        router.push({ path: '/map', query: { specialty: targetSpecialty } })
+      }, 2500); // 2.5 second delay so the user can read the response
+    }
     
   } catch (error) {
     console.error(error)
@@ -111,6 +136,14 @@ const sendMessage = async () => {
 </script>
 
 <style scoped>
+.standalone-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--bg-color);
+}
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -127,8 +160,35 @@ const sendMessage = async () => {
   padding: 1.5rem;
   text-align: center;
 }
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .chat-header h2 {
-  margin: 0 0 0.5rem 0;
+  margin: 0;
 }
 .chat-header p {
   margin: 0;

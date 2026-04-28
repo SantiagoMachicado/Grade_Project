@@ -5,15 +5,19 @@ from app.api.deps import get_current_user
 from app.models.user import User
 import logging
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
+
 router = APIRouter()
 
 @router.post("/", response_model=ChatResponse)
 async def chat_with_bot(
     request: ChatRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     try:
-        reply = get_gemini_response(request.history, request.message)
+        reply = await get_gemini_response(request.history, request.message, db)
         return ChatResponse(response=reply)
     except Exception as e:
         logging.error(f"Error en chat: {str(e)}")

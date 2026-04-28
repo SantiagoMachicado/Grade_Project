@@ -1,5 +1,6 @@
 <template>
-  <div class="glass-card">
+  <div class="auth-wrapper">
+    <div class="glass-card">
     <div class="text-center">
       <h2 class="title">Crear Cuenta</h2>
       <p class="subtitle">Únete a nuestra plataforma de salud</p>
@@ -43,6 +44,7 @@
       <p>¿Ya tienes cuenta? <RouterLink to="/login" class="link-text">Inicia sesión</RouterLink></p>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -84,6 +86,14 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--bg-color);
+}
 .title {
   font-size: 1.8rem;
   color: var(--text-main);

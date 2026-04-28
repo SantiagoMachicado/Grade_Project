@@ -95,3 +95,7 @@ async def delete_user(db: AsyncSession, user_id: int):
     await db.delete(user)
     await db.commit()
     return True
+
+async def get_doctor_specialties(db: AsyncSession):
+    result = await db.execute(select(Doctor.specialty).where(Doctor.specialty != None).distinct())
+    return result.scalars().all()

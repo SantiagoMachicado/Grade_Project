@@ -10,7 +10,8 @@ from app.models.appointment import Appointment
 async def reset_db():
     print("Dropping all tables...")
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        from sqlalchemy import text
+        await conn.execute(text("DROP TABLE IF EXISTS appointments, schedules, doctor_medical_centers, doctors, patients, medical_centers, users CASCADE;"))
         print("Creating all tables based on new models...")
         await conn.run_sync(Base.metadata.create_all)
     print("Done!")

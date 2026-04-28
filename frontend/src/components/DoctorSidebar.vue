@@ -26,9 +26,26 @@
       <RouterLink to="/chat" class="nav-item">
         <span class="icon">💬</span> Mensajes
       </RouterLink>
+      
+      <div class="spacer"></div>
+      
+      <button @click="handleLogout" class="nav-item logout-item">
+        <span class="icon">🚪</span> Cerrar Sesión
+      </button>
     </nav>
   </aside>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const handleLogout = () => {
+  localStorage.removeItem('access_token')
+  router.push('/login')
+}
+</script>
 
 <style scoped>
 .doctor-sidebar {
@@ -102,5 +119,26 @@
   margin-bottom: 0.5rem;
   padding-left: 1rem;
   letter-spacing: 0.05em;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.logout-item {
+  margin-top: auto;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: var(--danger-color);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.logout-item:hover {
+  background-color: #FEE2E2;
+  color: #DC2626;
 }
 </style>

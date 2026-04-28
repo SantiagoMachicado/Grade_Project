@@ -1,5 +1,6 @@
 <template>
-  <div class="glass-card">
+  <div class="auth-wrapper">
+    <div class="glass-card">
     <div class="text-center">
       <h2 class="title">Iniciar Sesión</h2>
       <p class="subtitle">Bienvenido de nuevo al portal de salud</p>
@@ -28,6 +29,7 @@
     <div class="footer-links">
       <p>¿No tienes una cuenta? <RouterLink to="/register" class="link-text">Regístrate aquí</RouterLink></p>
     </div>
+  </div>
   </div>
 </template>
 
@@ -70,7 +72,7 @@ const handleLogin = async () => {
     if (payload.role === 'medico') {
       router.push('/doctor/dashboard')
     } else if (payload.role === 'admin') {
-      router.push('/admin-dashboard')
+      router.push('/admin/dashboard')
     } else {
       // Por defecto o paciente
       router.push('/patient/dashboard')
@@ -90,6 +92,14 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--bg-color);
+}
 .title {
   font-size: 1.8rem;
   color: var(--text-main);

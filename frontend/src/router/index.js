@@ -11,7 +11,8 @@ import DoctorAgenda from '../views/doctor/DoctorAgenda.vue'
 import DoctorPatients from '../views/doctor/DoctorPatients.vue'
 import DoctorReports from '../views/doctor/DoctorReports.vue'
 import DoctorSettings from '../views/doctor/DoctorSettings.vue'
-import AdminDashboard from '../views/AdminDashboard.vue'
+import AdminLayout from '../views/admin/AdminLayout.vue'
+import AdminHome from '../views/admin/AdminHome.vue'
 import ChatView from '../views/ChatView.vue'
 
 const router = createRouter({
@@ -38,6 +39,8 @@ const router = createRouter({
       children: [
         { path: 'dashboard', name: 'patient-dashboard', component: PatientHome },
         { path: 'appointments', name: 'patient-appointments', component: PatientAppointments },
+        { path: 'appointments/new', name: 'patient-new-appointment', component: () => import('../views/patient/PatientDoctorSelection.vue') },
+        { path: 'appointments/new/:assignmentId', name: 'patient-schedule-selection', component: () => import('../views/patient/PatientScheduleSelection.vue') },
         { path: 'profile', name: 'patient-profile', component: PatientProfile }
       ]
     },
@@ -54,10 +57,12 @@ const router = createRouter({
       ]
     },
     {
-      path: '/admin-dashboard',
-      name: 'admin-dashboard',
-      component: AdminDashboard,
-      meta: { requiresAuth: true, role: 'admin' }
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true, role: 'admin' },
+      children: [
+        { path: 'dashboard', name: 'admin-dashboard', component: AdminHome }
+      ]
     },
     {
       path: '/chat',
@@ -97,7 +102,7 @@ router.beforeEach((to, from) => {
     // If logged in already, send to correct dashboard
     if (userRole === 'paciente') return '/patient/dashboard'
     else if (userRole === 'medico') return '/doctor/dashboard'
-    else if (userRole === 'admin') return '/admin-dashboard'
+    else if (userRole === 'admin') return '/admin/dashboard'
     else return '/'
   }
   

@@ -18,6 +18,11 @@ async def read_doctors(
     doctors = await crud_user.get_all_doctors(db, skip=skip, limit=limit)
     return doctors
 
+@router.get("/specialties/list", response_model=List[str])
+async def read_specialties(db: AsyncSession = Depends(get_db)):
+    specialties = await crud_user.get_doctor_specialties(db)
+    return specialties
+
 @router.get("/{doctor_id}", response_model=DoctorResponse)
 async def read_doctor(
     doctor_id: int, 

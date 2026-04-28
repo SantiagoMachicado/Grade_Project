@@ -1,17 +1,11 @@
 <template>
-  <aside class="patient-sidebar">
+  <aside class="admin-sidebar">
     <div class="sidebar-header">
-      <h3>Panel de Paciente</h3>
+      <h3>Panel Administrativo</h3>
     </div>
     <nav class="sidebar-nav">
-      <RouterLink to="/patient/dashboard" class="nav-item" active-class="active">
+      <RouterLink to="/admin/dashboard" class="nav-item" active-class="active">
         <span class="icon">🏠</span> Inicio
-      </RouterLink>
-      <RouterLink to="/patient/appointments" class="nav-item" active-class="active">
-        <span class="icon">📅</span> Mis Citas
-      </RouterLink>
-      <RouterLink to="/patient/profile" class="nav-item" active-class="active">
-        <span class="icon">👤</span> Mi Perfil
       </RouterLink>
       
       <div class="divider"></div>
@@ -23,7 +17,7 @@
       <RouterLink to="/chat" class="nav-item">
         <span class="icon">💬</span> Asistente Virtual
       </RouterLink>
-
+      
       <div class="spacer"></div>
       
       <button @click="handleLogout" class="nav-item logout-item">
@@ -45,7 +39,7 @@ const handleLogout = () => {
 </script>
 
 <style scoped>
-.patient-sidebar {
+.admin-sidebar {
   width: 260px;
   background-color: var(--card-bg);
   border-right: 1px solid #E5E7EB;
@@ -73,6 +67,7 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  height: 100%;
 }
 
 .nav-item {
@@ -93,12 +88,12 @@ const handleLogout = () => {
 
 .nav-item:hover {
   background-color: #F3F4F6;
-  color: var(--primary-color);
+  color: #111827;
 }
 
 .nav-item.active {
-  background-color: #EEF2FF;
-  color: var(--primary-color);
+  background-color: #E5E7EB;
+  color: #111827;
   font-weight: 600;
 }
 

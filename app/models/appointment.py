@@ -16,6 +16,7 @@ class Appointment(Base):
     patient_id = Column(Integer, ForeignKey("patients.user_id"), nullable=True)
     doctor_id = Column(Integer, ForeignKey("doctors.user_id"), nullable=True)
     center_id = Column(Integer, ForeignKey("medical_centers.id"), nullable=True)
+    schedule_id = Column(Integer, ForeignKey("schedules.id"), nullable=True)
     appointment_date = Column(DateTime(timezone=True), nullable=False)
     status = Column(String(20), default=AppointmentStatusEnum.PENDING.value)
     notes = Column(Text, nullable=True)
@@ -24,3 +25,4 @@ class Appointment(Base):
     patient = relationship("Patient", back_populates="appointments")
     doctor = relationship("Doctor", back_populates="appointments")
     center = relationship("MedicalCenter", back_populates="appointments")
+    schedule = relationship("Schedule")

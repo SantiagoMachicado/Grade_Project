@@ -1,36 +1,9 @@
 <template>
-  <div class="app-container">
-    <header class="app-header">
-      <div class="logo">
-        <h1>HealthCare Portal</h1>
-      </div>
-      <nav class="nav-links" v-if="isLoggedIn">
-        <RouterLink to="/map" class="nav-btn">Ver Mapa</RouterLink>
-        <button class="logout-btn" @click="handleLogout">Cerrar Sesión</button>
-      </nav>
-    </header>
-
-    <main class="main-content">
-      <RouterView />
-    </main>
-  </div>
+  <RouterView />
 </template>
 
 <script setup>
-import { RouterView, useRouter, useRoute } from 'vue-router'
-import { computed } from 'vue'
-
-const router = useRouter()
-const route = useRoute()
-
-const isLoggedIn = computed(() => {
-  return !!localStorage.getItem('access_token') && (route.name !== 'login' && route.name !== 'register')
-})
-
-const handleLogout = () => {
-  localStorage.removeItem('access_token')
-  router.push('/login')
-}
+import { RouterView } from 'vue-router'
 </script>
 
 <style>

@@ -41,5 +41,5 @@ class Doctor(Base):
     consultation_fee = Column(Numeric(10, 2), nullable=True)
     
     user = relationship("User", back_populates="doctor")
-    schedules = relationship("Schedule", back_populates="doctor", cascade="all, delete-orphan")
+    assignments = relationship("DoctorMedicalCenter", back_populates="doctor", cascade="all, delete-orphan")
     appointments = relationship("Appointment", back_populates="doctor", cascade="all, delete-orphan")
