@@ -7,3 +7,6 @@ passlib[bcrypt]>=1.7.4
 pyjwt>=2.8.0
 pydantic[email]>=2.0.0
 python-multipart>=0.0.9
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+langchain-google-genai>=0.0.8
