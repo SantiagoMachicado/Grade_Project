@@ -6,6 +6,7 @@ from app.core import database
 from app.models import Base
 from app.api.v1.api import api_router
 from app.core.config import settings
+from app.services.scheduler import start_scheduler
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,6 +14,9 @@ async def lifespan(app: FastAPI):
     # En producción usar Alembic para migraciones
     async with database.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        
+    # Iniciar el motor de notificaciones en segundo plano
+    start_scheduler()
     yield
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)

@@ -16,12 +16,18 @@ class AppointmentCreate(AppointmentBase):
 class AppointmentUpdateStatus(BaseModel):
     status: AppointmentStatusEnum
 
+class AppointmentUpdateReport(BaseModel):
+    medical_report: str
+
 class AppointmentResponse(AppointmentBase):
     id: int
     patient_id: int
     doctor_id: int
     center_id: int
     status: AppointmentStatusEnum
+    medical_report: Optional[str] = None
+    notified_24h: bool = False
+    notified_3h: bool = False
     
     patient: Optional[PatientResponse] = None
     doctor: Optional[DoctorResponse] = None

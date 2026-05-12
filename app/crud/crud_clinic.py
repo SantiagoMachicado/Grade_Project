@@ -78,7 +78,12 @@ async def get_available_slots_for_assignment(db: AsyncSession, assignment_id: in
             )
         )
     )
-    booked_times = [appt.appointment_date for appt in appts.scalars().all()]
+    booked_times_str = []
+    for appt in appts.scalars().all():
+        dt = appt.appointment_date
+        if dt.tzinfo is not None:
+            dt = dt.astimezone().replace(tzinfo=None)
+        booked_times_str.append(dt.strftime("%Y-%m-%d %H:%M"))
     
     available_days = []
     current_date = start_date.date()
@@ -95,15 +100,29 @@ async def get_available_slots_for_assignment(db: AsyncSession, assignment_id: in
                 
                 curr_dt = start_dt
                 while curr_dt + timedelta(minutes=30) <= end_dt:
-                    if curr_dt >= start_date: 
-                        if curr_dt not in booked_times:
-                            slots_for_day.append(curr_dt.strftime("%H:%M"))
+                    if curr_dt.date() >= start_date.date(): 
+                        time_str = curr_dt.strftime("%H:%M")
+                        curr_str = curr_dt.strftime("%Y-%m-%d %H:%M")
+                        is_available = True
+                        
+                        # Si la hora ya paso o si esta reservada, no esta disponible
+                        if curr_dt < start_date or curr_str in booked_times_str:
+                            is_available = False
+                            
+                        # Evitar duplicados si hay cruces de horarios en db
+                        if not any(s['time'] == time_str for s in slots_for_day):
+                            slots_for_day.append({
+                                "time": time_str,
+                                "available": is_available
+                            })
                     curr_dt += timedelta(minutes=30)
             
             if slots_for_day:
+                # Sort slots by time
+                slots_for_day.sort(key=lambda x: x["time"])
                 available_days.append({
                     "date": target_date.isoformat(),
-                    "slots": sorted(list(set(slots_for_day)))
+                    "slots": slots_for_day
                 })
                 
     return available_days

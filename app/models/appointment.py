@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models import Base
@@ -9,6 +9,7 @@ class AppointmentStatusEnum(str, enum.Enum):
     CONFIRMED = "confirmada"
     CANCELLED = "cancelada"
     COMPLETED = "completada"
+    ABSENT = "ausente"
 
 class Appointment(Base):
     __tablename__ = "appointments"
@@ -20,7 +21,11 @@ class Appointment(Base):
     appointment_date = Column(DateTime(timezone=True), nullable=False)
     status = Column(String(20), default=AppointmentStatusEnum.PENDING.value)
     notes = Column(Text, nullable=True)
+    medical_report = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    notified_24h = Column(Boolean, default=False)
+    notified_3h = Column(Boolean, default=False)
     
     patient = relationship("Patient", back_populates="appointments")
     doctor = relationship("Doctor", back_populates="appointments")

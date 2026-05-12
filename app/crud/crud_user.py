@@ -47,19 +47,23 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
     return db_user
 
 async def get_patient(db: AsyncSession, user_id: int) -> Patient | None:
-    result = await db.execute(select(Patient).where(Patient.user_id == user_id))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(select(Patient).where(Patient.user_id == user_id).options(selectinload(Patient.user)))
     return result.scalars().first()
 
 async def get_all_patients(db: AsyncSession, skip: int = 0, limit: int = 100):
-    result = await db.execute(select(Patient).offset(skip).limit(limit))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(select(Patient).options(selectinload(Patient.user)).offset(skip).limit(limit))
     return result.scalars().all()
 
 async def get_doctor(db: AsyncSession, user_id: int) -> Doctor | None:
-    result = await db.execute(select(Doctor).where(Doctor.user_id == user_id))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(select(Doctor).where(Doctor.user_id == user_id).options(selectinload(Doctor.user)))
     return result.scalars().first()
 
 async def get_all_doctors(db: AsyncSession, skip: int = 0, limit: int = 100):
-    result = await db.execute(select(Doctor).offset(skip).limit(limit))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(select(Doctor).options(selectinload(Doctor.user)).offset(skip).limit(limit))
     return result.scalars().all()
 
 async def update_patient(db: AsyncSession, user_id: int, updates: UserUpdate) -> Patient:

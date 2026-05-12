@@ -39,11 +39,12 @@ async def read_patient_appointments(
 @router.get("/doctor/{doctor_id}", response_model=List[AppointmentResponse])
 async def read_doctor_appointments(
     doctor_id: int,
+    status: str = None,
     skip: int = 0, limit: int = 100, 
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return await crud_appointment.get_appointments_by_doctor(db, doctor_id=doctor_id, skip=skip, limit=limit)
+    return await crud_appointment.get_appointments_by_doctor(db, doctor_id=doctor_id, skip=skip, limit=limit, status=status)
 
 @router.get("/doctor/{doctor_id}/agenda", response_model=List[AgendaSlotResponse])
 async def read_doctor_agenda(
@@ -54,6 +55,22 @@ async def read_doctor_agenda(
 ):
     return await crud_appointment.get_doctor_agenda(db, doctor_id=doctor_id, target_date=date)
 
+@router.get("/doctor/{doctor_id}/stats")
+async def read_doctor_stats(
+    doctor_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return await crud_appointment.get_doctor_stats(db, doctor_id=doctor_id)
+
+@router.get("/doctor/{doctor_id}/dashboard")
+async def read_doctor_dashboard(
+    doctor_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return await crud_appointment.get_doctor_dashboard_stats(db, doctor_id=doctor_id)
+
 @router.patch("/{appointment_id}/status", response_model=AppointmentResponse)
 async def update_appointment_status_endpoint(
     appointment_id: int,
@@ -62,6 +79,17 @@ async def update_appointment_status_endpoint(
     current_user: User = Depends(get_current_user)
 ):
     return await crud_appointment.update_appointment_status(db, appointment_id=appointment_id, update=status_in)
+
+from app.schemas.appointment import AppointmentUpdateReport
+
+@router.patch("/{appointment_id}/report", response_model=AppointmentResponse)
+async def update_appointment_report_endpoint(
+    appointment_id: int,
+    report_in: AppointmentUpdateReport,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return await crud_appointment.update_appointment_report(db, appointment_id=appointment_id, report=report_in.medical_report)
 
 @router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def cancel_appointment_endpoint(

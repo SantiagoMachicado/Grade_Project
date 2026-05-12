@@ -1,6 +1,5 @@
 <template>
   <div class="layout-container">
-    <PatientSidebar />
     <div class="layout-content">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
@@ -8,6 +7,7 @@
         </transition>
       </router-view>
     </div>
+    <PatientSidebar /> <!-- Now acts as bottom nav -->
   </div>
 </template>
 
@@ -18,18 +18,18 @@ import PatientSidebar from '../../components/PatientSidebar.vue'
 <style scoped>
 .layout-container {
   display: flex;
+  flex-direction: column;
   width: 100vw;
-  /* Compensamos la alineación center global de origin .main-content 
-     si queremos expandirlo full width. Pero por ahora lo anidamos fluidamente */
-  min-height: calc(100vh - 72px); /* 72px=header aprox */
+  min-height: 100vh;
+  background-color: #f8fafc;
 }
 
-/* Redefinir variables locales si es necesario */
 .layout-content {
   flex: 1;
-  padding: 2rem;
-  background-color: var(--bg-color);
+  width: 100%;
   overflow-y: auto;
+  /* Espacio extra en la parte inferior para que el bottom nav no tape contenido */
+  padding-bottom: 80px; 
 }
 
 /* Transiciones suaves entre rutas hijas */

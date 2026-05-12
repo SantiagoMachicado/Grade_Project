@@ -53,7 +53,11 @@ const router = createRouter({
         { path: 'agenda', name: 'doctor-agenda', component: DoctorAgenda },
         { path: 'patients', name: 'doctor-patients', component: DoctorPatients },
         { path: 'reports', name: 'doctor-reports', component: DoctorReports },
-        { path: 'settings', name: 'doctor-settings', component: DoctorSettings }
+        { path: 'settings', name: 'doctor-settings', component: DoctorSettings },
+        { path: 'settings/personal', name: 'doctor-settings-personal', component: () => import('../views/doctor/settings/DoctorPersonalInfo.vue') },
+        { path: 'settings/clinic', name: 'doctor-settings-clinic', component: () => import('../views/doctor/settings/DoctorClinicInfo.vue') },
+        { path: 'settings/notifications', name: 'doctor-settings-notifications', component: () => import('../views/doctor/settings/DoctorNotifications.vue') },
+        { path: 'settings/about', name: 'doctor-settings-about', component: () => import('../views/doctor/settings/DoctorAbout.vue') }
       ]
     },
     {
@@ -75,6 +79,11 @@ const router = createRouter({
       name: 'map',
       component: () => import('../views/ClinicsMapView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/help-center',
+      name: 'help-center',
+      component: () => import('../views/HelpCenter.vue')
     }
   ]
 })
