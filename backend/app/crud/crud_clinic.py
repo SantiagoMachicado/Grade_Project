@@ -65,6 +65,7 @@ async def get_available_slots_for_assignment(db: AsyncSession, assignment_id: in
     from sqlalchemy import and_
     
     start_date = datetime.now()
+    start_date_midnight = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_date = start_date + timedelta(days=days)
     
     appts = await db.execute(
@@ -72,7 +73,7 @@ async def get_available_slots_for_assignment(db: AsyncSession, assignment_id: in
             and_(
                 Appointment.doctor_id == assignment.doctor_id,
                 Appointment.center_id == assignment.center_id,
-                Appointment.appointment_date >= start_date,
+                Appointment.appointment_date >= start_date_midnight,
                 Appointment.appointment_date <= end_date,
                 Appointment.status != AppointmentStatusEnum.CANCELLED.value
             )
@@ -82,7 +83,8 @@ async def get_available_slots_for_assignment(db: AsyncSession, assignment_id: in
     for appt in appts.scalars().all():
         dt = appt.appointment_date
         if dt.tzinfo is not None:
-            dt = dt.astimezone().replace(tzinfo=None)
+            # Strip timezone without shifting the hour (avoid local timezone mismatch)
+            dt = dt.replace(tzinfo=None)
         booked_times_str.append(dt.strftime("%Y-%m-%d %H:%M"))
     
     available_days = []
@@ -105,8 +107,8 @@ async def get_available_slots_for_assignment(db: AsyncSession, assignment_id: in
                         curr_str = curr_dt.strftime("%Y-%m-%d %H:%M")
                         is_available = True
                         
-                        # Si la hora ya paso o si esta reservada, no esta disponible
-                        if curr_dt < start_date or curr_str in booked_times_str:
+                        # Bloquear si la cita es en menos de 3 horas o si ya está reservada
+                        if curr_dt < start_date + timedelta(hours=3) or curr_str in booked_times_str:
                             is_available = False
                             
                         # Evitar duplicados si hay cruces de horarios en db

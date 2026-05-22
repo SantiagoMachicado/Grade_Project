@@ -45,11 +45,10 @@ async def test_i8_i9_rbac_restrictions(client: AsyncClient, create_test_users):
 
     # I8: Paciente intentando ver dashboard de doctor (Debe ser 403 Forbidden o 401)
     res = await client.get(f"/api/v1/appointments/doctor/{doctor.id}/dashboard", headers=headers_p)
-    assert res.status_code in [403, 401] # Dependiendo de cómo lo hayas implementado en Depends
+    assert res.status_code in [403, 401]
 
     # I9: Doctor intentando crear clínicas (Asumimos que solo el Admin puede en /clinics/ POST, o algo similar)
     res_doc_on_patient = await client.get(f"/api/v1/appointments/patient/{patient.id}", headers=headers_d)
-    # Un doctor no puede consultar el historial como si fuera el paciente dueño (a menos que no hayas restringido esto, pero según el plan I8 e I9 exigen un 403)
     assert res_doc_on_patient.status_code in [403, 401]
     
     res_doc_create_clinic = await client.post("/api/v1/clinics/", json={"name": "Test", "address": "Test", "phone": "123"}, headers=headers_d)

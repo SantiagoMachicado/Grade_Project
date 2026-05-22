@@ -1,61 +1,146 @@
 <template>
-  <div class="standalone-wrapper">
-    <div class="chat-container glass-card">
-    <div class="chat-header">
-      <div class="title-row">
-        <button @click="$router.go(-1)" class="back-btn">← Volver</button>
-        <h2>Asistente de Salud Virtual</h2>
-      </div>
-      <p>Consultas y ayuda inteligente (Gemini 2.5 Flash)</p>
-    </div>
-
-    <!-- Mensajes -->
-    <div class="chat-box" ref="chatBox">
-      <div 
-        v-for="(msg, index) in localHistory" 
-        :key="index"
-        :class="['message', msg.role === 'user' ? 'message-user' : 'message-ai']"
-      >
-        <div class="message-bubble">
-          {{ msg.content }}
-        </div>
-      </div>
-      
-      <!-- Indicador de carga -->
-      <div v-if="isTyping" class="message message-ai">
-        <div class="message-bubble typing-indicator">
-          <span>.</span><span>.</span><span>.</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Formulario de Chat -->
-    <form @submit.prevent="sendMessage" class="chat-input-area">
-      <input 
-        v-model="newMessage" 
-        type="text" 
-        placeholder="Escribe tu consulta médica aquí..." 
-        :disabled="isTyping"
-        required 
-      />
-      <button type="submit" class="send-btn" :disabled="isTyping || !newMessage.trim()">
-        Enviar
+  <div class="responsive-dashboard-container chat-view-container">
+    
+    <!-- Header -->
+    <div class="top-header">
+      <button class="icon-btn" @click="$router.go(-1)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
-    </form>
+      <div class="header-titles">
+        <h2 class="header-title">Asistente de Salud Virtual</h2>
+        <span class="header-subtitle">Gemini 2.5 Flash</span>
+      </div>
+      <div style="width: 24px"></div> <!-- Placeholder for centering -->
     </div>
+
+    <!-- Chat Body -->
+    <div class="chat-body" ref="chatBox">
+      
+      <div class="message-wrapper" v-for="(msg, index) in localHistory" :key="index">
+        
+        <div :class="['message', msg.role === 'user' ? 'message-user' : 'message-ai']">
+          
+          <!-- AI Avatar -->
+          <div class="avatar ai-avatar" v-if="msg.role === 'assistant'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+
+          <div class="message-content">
+            <div class="sender-name">{{ msg.role === 'user' ? 'Tú' : 'AI Agent' }}</div>
+            
+            <div class="message-bubble">
+              {{ msg.content }}
+            </div>
+
+            <!-- ACTION CARD (Intent Detected) -->
+            <div class="intent-card" v-if="msg.action && !msg.action.cancelled">
+              <div class="intent-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>INTENCIÓN DETECTADA: BUSCAR MÉDICO</span>
+              </div>
+              <div class="intent-body">
+                <div class="intent-row">
+                  <span class="intent-label">Acción</span>
+                  <span class="intent-value">Ver Mapa de Clínicas</span>
+                </div>
+                <div class="intent-row">
+                  <span class="intent-label">Especialidad</span>
+                  <span class="intent-value">{{ msg.action.specialty }}</span>
+                </div>
+              </div>
+              <div class="intent-actions">
+                <button class="btn-confirm" @click="confirmAction(msg.action)">Confirmar</button>
+              </div>
+              <button class="btn-continue" @click="cancelAction(index)">
+                No gracias, continuar conversando
+              </button>
+            </div>
+
+            <div class="timestamp">{{ msg.time || getCurrentTime() }} <svg v-if="msg.role==='user'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+          </div>
+
+          <!-- User Avatar -->
+          <div class="avatar user-avatar" v-if="msg.role === 'user'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Suggested Prompts (Only show if no user messages yet) -->
+      <div class="suggested-prompts" v-if="localHistory.length === 1 && !isTyping">
+        <button class="prompt-chip" @click="sendSuggested('Quiero agendar una cita médica')">
+          📅 Agendar cita médica
+        </button>
+        <button class="prompt-chip" @click="sendSuggested('¿Cuáles son las clínicas disponibles?')">
+          🏥 Ver clínicas cercanas
+        </button>
+        <button class="prompt-chip" @click="sendSuggested('¿Qué especialidades médicas tienen disponibles?')">
+          ❤️ Especialidades disponibles
+        </button>
+      </div>
+
+      <!-- Typing indicator -->
+      <div class="message-wrapper" v-if="isTyping">
+        <div class="message message-ai">
+          <div class="avatar ai-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+          <div class="message-content">
+            <div class="sender-name">AI Agent</div>
+            <div class="message-bubble typing-bubble">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-footer">
+      <form @submit.prevent="sendMessage" class="input-wrapper">
+        <input 
+          v-model="newMessage" 
+          type="text" 
+          placeholder="Escribe tu mensaje..." 
+          :disabled="isTyping"
+          ref="inputField"
+          required 
+        />
+        <button type="button" class="action-btn mic-btn" title="Voz (Demo)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </button>
+        <button type="submit" class="action-btn send-btn" :disabled="isTyping || !newMessage.trim()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </button>
+      </form>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 const router = useRouter()
+const inputField = ref(null)
 
-// La memoria se almacena sólo en la sesión del cliente por simplicidad del prototipo
+const getCurrentTime = () => {
+  const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; 
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  return hours + ':' + minutes + ' ' + ampm;
+}
+
 const localHistory = ref([
-  { role: 'assistant', content: '¡Hola! Soy tu asistente médico virtual. ¿En qué puedo ayudarte hoy?' }
+  { role: 'assistant', content: '¿Cómo puedo ayudarte a agendar hoy?', time: getCurrentTime() }
 ])
 const newMessage = ref('')
 const isTyping = ref(false)
@@ -68,16 +153,36 @@ const scrollToBottom = async () => {
   }
 }
 
+const confirmAction = (action) => {
+  if (action.type === 'map') {
+    router.push({ path: '/map', query: { specialty: action.specialty } })
+  }
+}
+
+const sendSuggested = (text) => {
+  newMessage.value = text;
+  sendMessage();
+}
+
+const cancelAction = (index) => {
+  // Mark the action as cancelled so the card disappears
+  if (localHistory.value[index] && localHistory.value[index].action) {
+    localHistory.value[index].action.cancelled = true;
+  }
+  // Focus the input so the user can type what they actually want
+  if (inputField.value) {
+    inputField.value.focus();
+  }
+}
+
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
 
-  // 1. Agregar el mensaje del usuario a la vista
-  const userMsg = { role: 'user', content: newMessage.value.trim() }
-  // Filtramos la data en bruto que el backend espera (para omitir el saludo inicial si se requiere o pasarlo como contexto)
-  // En nuestro backend get_gemini_response ya sabe concatenar "history", así que se lo enviamos
+  const userMsg = { role: 'user', content: newMessage.value.trim(), time: getCurrentTime() }
   
   // Guardamos un clon del historial SIN el nuevo mensaje, para enviarlo como contexto
-  const historyForBackend = localHistory.value.filter(m => m.role !== 'system') // Si tuviéramos
+  // Y filtramos propiedades extrañas para el backend
+  const historyForBackend = localHistory.value.map(m => ({ role: m.role, content: m.content }))
   
   localHistory.value.push(userMsg)
   
@@ -89,204 +194,345 @@ const sendMessage = async () => {
   try {
     const token = localStorage.getItem('access_token')
     
-    // 2. Hacer la llamada POST al backend
     const response = await axios.post('http://localhost:8000/api/v1/chat/', {
-      history: historyForBackend, // Se envía todo lo que hablaron hoy
+      history: historyForBackend,
       message: textToSend
     }, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
 
-    // 3. Añadir la respuesta de la IA a la memoria local y vista
     let aiResponse = response.data.response;
-    let targetSpecialty = null;
+    let actionObj = null;
     
+    // Check if the AI wants to redirect to the map
     const actionRegex = /\[ACTION:MAP:(.*?)\]/i;
     const match = aiResponse.match(actionRegex);
     if (match) {
-      targetSpecialty = match[1].trim();
-      // Remove the action tag from the visible response
+      const targetSpecialty = match[1].trim();
       aiResponse = aiResponse.replace(actionRegex, '').trim();
+      actionObj = { type: 'map', specialty: targetSpecialty, cancelled: false };
     }
 
-    localHistory.value.push({ role: 'assistant', content: aiResponse })
-    
-    if (targetSpecialty) {
-      setTimeout(() => {
-        router.push({ path: '/map', query: { specialty: targetSpecialty } })
-      }, 2500); // 2.5 second delay so the user can read the response
-    }
+    localHistory.value.push({ 
+      role: 'assistant', 
+      content: aiResponse, 
+      time: getCurrentTime(),
+      action: actionObj
+    })
     
   } catch (error) {
     console.error(error)
     let errText = "Ocurrió un error al contactar al asistente."
-    
     if (error.response?.data?.detail) {
       errText = `Error de IA: ${error.response.data.detail}`
     }
-    
-    localHistory.value.push({ role: 'assistant', content: errText })
+    localHistory.value.push({ role: 'assistant', content: errText, time: getCurrentTime() })
   } finally {
     isTyping.value = false
     scrollToBottom()
   }
 }
+
+onMounted(() => {
+  scrollToBottom()
+})
 </script>
 
 <style scoped>
-.standalone-wrapper {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  background-color: var(--bg-color);
-}
-.chat-container {
+/* Main Container matching the dashboard styles */
+.chat-view-container {
   display: flex;
   flex-direction: column;
-  height: 80vh; /* Pantalla casi completa */
-  max-width: 800px;
-  width: 100%;
+  background: #f8fafc;
+  height: 90vh; /* Fixed height to allow scrolling */
   padding: 0;
   overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  border: 1px solid #f1f5f9;
 }
 
-.chat-header {
-  background: var(--primary-color);
-  color: white;
-  padding: 1.5rem;
-  text-align: center;
+/* Header */
+.top-header { 
+  display: flex; align-items: center; justify-content: space-between; 
+  padding: 1.25rem 1.5rem; background: white; border-bottom: 1px solid #f1f5f9; 
+  z-index: 10;
 }
+.icon-btn { 
+  background: none; border: none; color: #64748b; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center; 
+  padding: 0.5rem; border-radius: 50%; transition: background 0.2s; 
+  margin-left: -0.5rem;
+}
+.icon-btn:hover { background: #f1f5f9; color: #1e293b; }
+.header-titles { text-align: center; }
+.header-title { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+.header-subtitle { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
 
-.title-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-  position: relative;
-}
-
-.back-btn {
-  position: absolute;
-  left: 0;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  color: white;
-  transition: all 0.2s;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.chat-header h2 {
-  margin: 0;
-}
-.chat-header p {
-  margin: 0;
-  opacity: 0.8;
-  font-size: 0.9rem;
-}
-
-.chat-box {
+/* Chat Body */
+.chat-body {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
-  background: #fcfcfc;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
+  scroll-behavior: smooth;
+}
+.chat-body::-webkit-scrollbar { width: 6px; }
+.chat-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+.message-wrapper {
+  display: flex;
+  width: 100%;
 }
 
 .message {
   display: flex;
-  width: 100%;
-}
-.message-user {
-  justify-content: flex-end;
-}
-.message-ai {
-  justify-content: flex-start;
+  gap: 0.75rem;
+  max-width: 85%;
 }
 
+.message-user {
+  margin-left: auto;
+  flex-direction: row;
+}
+
+.message-ai {
+  margin-right: auto;
+  flex-direction: row;
+}
+
+/* Avatars */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ai-avatar { background: #e0f2fe; color: #0284c7; }
+.user-avatar { background: #e2e8f0; color: #475569; }
+
+/* Suggested Prompts */
+.suggested-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  margin-left: 3.5rem; /* Aligns with the AI message bubble */
+}
+
+.prompt-chip {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 0.6rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0284c7;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.prompt-chip:hover {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  transform: translateY(-1px);
+}
+
+/* Message Content area */
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.message-user .message-content { align-items: flex-end; }
+.message-ai .message-content { align-items: flex-start; }
+
+.sender-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0.25rem;
+}
+
+/* Bubbles */
 .message-bubble {
-  max-width: 70%;
   padding: 1rem 1.25rem;
-  border-radius: 12px;
+  border-radius: 20px;
   line-height: 1.5;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  font-size: 0.95rem;
   white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .message-user .message-bubble {
-  background: var(--primary-color);
+  background: #004e98;
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .message-ai .message-bubble {
   background: white;
-  color: var(--text-main);
-  border: 1px solid #e5e7eb;
+  color: #1e293b;
   border-bottom-left-radius: 4px;
 }
 
-.chat-input-area {
-  display: flex;
-  padding: 1.25rem;
+/* Intent Card */
+.intent-card {
+  margin-top: 0.5rem;
   background: white;
-  border-top: 1px solid #e5e7eb;
-  gap: 1rem;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
+  width: 280px;
 }
 
-.chat-input-area input {
+.intent-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #06b6d4; /* Cyan color matching the image style */
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+}
+
+.intent-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.intent-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.intent-label { color: #64748b; }
+.intent-value { font-weight: 700; color: #004e98; }
+
+.intent-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.intent-actions button {
   flex: 1;
-  padding: 0.8rem 1rem;
-  border: 1px solid #d1d5db;
+  padding: 0.6rem;
   border-radius: 8px;
-  outline: none;
-  font-size: 1rem;
-}
-.chat-input-area input:focus {
-  border-color: var(--primary-color);
-}
-
-.send-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: opacity 0.2s;
-}
-.send-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  transition: all 0.2s;
+  border: none;
 }
 
-/* Typing animation */
-.typing-indicator span {
-  display: inline-block;
-  animation: blink 1.4s infinite reverse;
-  font-size: 1.5rem;
-  line-height: 1;
-}
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+.btn-confirm { background: #06b6d4; color: white; }
+.btn-confirm:hover { background: #0891b2; }
 
-@keyframes blink {
-  0% { opacity: 0.2; }
-  20% { opacity: 1; }
-  100% { opacity: 0.2; }
+.btn-continue {
+  margin-top: 0.75rem;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0;
 }
+.btn-continue:hover {
+  color: #64748b;
+}
+
+/* Timestamp */
+.timestamp {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin: 0.2rem 0.5rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Typing Indicator */
+.typing-bubble { display: flex; gap: 4px; padding: 1.25rem 1.5rem; align-items: center; }
+.dot { width: 6px; height: 6px; background: #cbd5e1; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+.dot:nth-child(1) { animation-delay: -0.32s; }
+.dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); background: #94a3b8; } }
+
+/* Input Footer */
+.chat-footer {
+  padding: 1rem 1.5rem;
+  background: white;
+  border-top: 1px solid #f1f5f9;
+  z-index: 10;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 50px;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #0284c7;
+  background: white;
+}
+
+.input-wrapper input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-family: inherit;
+}
+.input-wrapper input::placeholder { color: #94a3b8; }
+
+.action-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mic-btn { color: #94a3b8; margin-right: 0.25rem; }
+.mic-btn:hover { color: #0284c7; background: #f1f5f9; }
+
+.send-btn { background: #004e98; color: white; }
+.send-btn:hover:not(:disabled) { background: #003a70; }
+.send-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
 </style>

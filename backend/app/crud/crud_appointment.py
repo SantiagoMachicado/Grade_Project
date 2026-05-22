@@ -142,10 +142,13 @@ async def get_doctor_dashboard_stats(db: AsyncSession, doctor_id: int):
     
     def format_appt(appt):
         if not appt: return None
+        dt = appt.appointment_date
+        if dt.tzinfo is not None:
+            dt = dt.replace(tzinfo=None)
         return {
             "id": appt.id,
             "patient_id": appt.patient_id,
-            "appointment_date": appt.appointment_date.isoformat(),
+            "appointment_date": dt.isoformat(),
             "status": appt.status,
             "notes": appt.notes
         }
@@ -259,7 +262,7 @@ async def get_doctor_agenda(db: AsyncSession, doctor_id: int, target_date: str):
     for appt in appointments:
         dt = appt.appointment_date
         if dt.tzinfo is not None:
-            dt = dt.astimezone()
+            dt = dt.replace(tzinfo=None)
         time_key = dt.time().replace(second=0, microsecond=0)
         appt_dict[time_key] = appt
     

@@ -34,7 +34,7 @@ async def setup_integration_db(db_session):
     return p, d, center.id, sched.id
 
 @pytest.mark.asyncio
-async def test_i3_i4_i5_i10_appointments_flow(client: AsyncClient, setup_integration_db):
+async def test_i3_i4_i5_i10_i11_i12_appointments_flow(client: AsyncClient, setup_integration_db):
     patient, doctor, center_id, sched_id = setup_integration_db
     
     # Login patient
@@ -77,7 +77,7 @@ async def test_i3_i4_i5_i10_appointments_flow(client: AsyncClient, setup_integra
     appt_data["appointment_date"] = future_date2
     res_update = await client.put(f"/api/v1/appointments/{appt_id}", json=appt_data, headers=headers_p)
     assert res_update.status_code == 200
-    assert res_update.json()["appointment_date"] == future_date2.replace("+00:00", "Z")
+    assert res_update.json()["appointment_date"] == future_date2.replace("+00:00", "")
     
     # I10: PATCH /appointments/{id}/report (Doc ONLY)
     report_data = {"medical_report": "Paciente sano"}

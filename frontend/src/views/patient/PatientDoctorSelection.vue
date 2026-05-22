@@ -73,10 +73,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
 const router = useRouter()
+const route = useRoute()
 const assignments = ref([])
 const isLoading = ref(true)
 const error = ref('')
@@ -133,6 +134,12 @@ const selectDoctor = (assignmentId) => {
 }
 
 onMounted(() => {
+  if (route.query.search) {
+    searchQuery.value = route.query.search
+  }
+  if (route.query.specialty) {
+    selectedSpecialty.value = route.query.specialty
+  }
   fetchAssignments()
 })
 </script>

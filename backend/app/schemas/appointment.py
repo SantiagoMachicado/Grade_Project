@@ -5,24 +5,31 @@ from app.models.appointment import AppointmentStatusEnum
 from app.schemas.user import PatientResponse, DoctorResponse
 from app.schemas.clinic import MedicalCenterResponse
 
+from pydantic import field_serializer
+
 class AppointmentBase(BaseModel):
     appointment_date: datetime
     notes: Optional[str] = None
 
+    @field_serializer('appointment_date')
+    def serialize_dt(self, dt: datetime, _info):
+        if dt.tzinfo is not None:
+            return dt.replace(tzinfo=None)
+        return dt
+
+class AppointmentCreate(AppointmentBase):
+    doctor_id: int
+    center_id: int
+    
     @field_validator('appointment_date')
     @classmethod
     def date_must_be_in_future(cls, v):
-        # Asegurar que la fecha esté en UTC o sea timezone-aware antes de comparar
         now = datetime.now(timezone.utc)
         if v.tzinfo is None:
             v = v.replace(tzinfo=timezone.utc)
         if v < now:
             raise ValueError('appointment_date must be in the future')
         return v
-
-class AppointmentCreate(AppointmentBase):
-    doctor_id: int
-    center_id: int
 
 class AppointmentUpdateStatus(BaseModel):
     status: AppointmentStatusEnum

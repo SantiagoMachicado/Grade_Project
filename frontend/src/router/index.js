@@ -56,6 +56,7 @@ const router = createRouter({
         { path: 'settings', name: 'doctor-settings', component: DoctorSettings },
         { path: 'settings/personal', name: 'doctor-settings-personal', component: () => import('../views/doctor/settings/DoctorPersonalInfo.vue') },
         { path: 'settings/clinic', name: 'doctor-settings-clinic', component: () => import('../views/doctor/settings/DoctorClinicInfo.vue') },
+        { path: 'settings/schedules', name: 'doctor-settings-schedules', component: () => import('../views/doctor/settings/DoctorSchedules.vue') },
         { path: 'settings/notifications', name: 'doctor-settings-notifications', component: () => import('../views/doctor/settings/DoctorNotifications.vue') },
         { path: 'settings/about', name: 'doctor-settings-about', component: () => import('../views/doctor/settings/DoctorAbout.vue') }
       ]
@@ -90,15 +91,24 @@ const router = createRouter({
 
 // Simple Route Guard to protect auth routes and role-based redirects
 router.beforeEach((to, from) => {
-  const token = localStorage.getItem('access_token')
+  let token = localStorage.getItem('access_token')
   let userRole = null
 
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
       userRole = payload.role
+      
+      // Check if token is expired
+      const currentTime = Math.floor(Date.now() / 1000)
+      if (payload.exp && payload.exp < currentTime) {
+        throw new Error('Token expired')
+      }
     } catch (e) {
-      console.error('Invalid token payload')
+      console.error('Invalid or expired token payload')
+      localStorage.removeItem('access_token')
+      token = null
+      userRole = null
     }
   }
 
@@ -112,7 +122,10 @@ router.beforeEach((to, from) => {
     if (userRole === 'paciente') return '/patient/dashboard'
     else if (userRole === 'medico') return '/doctor/dashboard'
     else if (userRole === 'admin') return '/admin/dashboard'
-    else return '/'
+    else {
+      localStorage.removeItem('access_token')
+      return '/login'
+    }
   }
   
   return true
