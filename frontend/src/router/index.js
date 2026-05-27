@@ -66,7 +66,10 @@ const router = createRouter({
       component: AdminLayout,
       meta: { requiresAuth: true, role: 'admin' },
       children: [
-        { path: 'dashboard', name: 'admin-dashboard', component: AdminHome }
+        { path: 'dashboard', name: 'admin-dashboard', component: AdminHome },
+        { path: 'doctors', name: 'admin-doctors', component: () => import('../views/admin/AdminDoctors.vue') },
+        { path: 'patients', name: 'admin-patients', component: () => import('../views/admin/AdminPatients.vue') },
+        { path: 'clinics', name: 'admin-clinics', component: () => import('../views/admin/AdminClinics.vue') }
       ]
     },
     {

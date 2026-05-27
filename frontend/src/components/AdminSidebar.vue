@@ -9,6 +9,19 @@
       </RouterLink>
       
       <div class="divider"></div>
+      <p class="nav-subtitle">Gestión de datos</p>
+
+      <RouterLink to="/admin/doctors" class="nav-item" active-class="active">
+        <span class="icon">🩺</span> Médicos
+      </RouterLink>
+      <RouterLink to="/admin/patients" class="nav-item" active-class="active">
+        <span class="icon">👥</span> Pacientes
+      </RouterLink>
+      <RouterLink to="/admin/clinics" class="nav-item" active-class="active">
+        <span class="icon">🏥</span> Clínicas
+      </RouterLink>
+      
+      <div class="divider"></div>
       <p class="nav-subtitle">Herramientas globales</p>
       
       <RouterLink to="/map" class="nav-item">

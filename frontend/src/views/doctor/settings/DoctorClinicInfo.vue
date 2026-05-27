@@ -125,6 +125,21 @@ onMounted(() => {
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin-bottom: 2rem;
+  transition: max-width 0.3s ease;
+}
+
+@media (min-width: 860px) {
+  .profile-container {
+    max-width: 1000px;
+  }
+  .info-content {
+    display: grid !important;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 2rem !important;
+  }
+  .readonly-notice {
+    grid-column: span 2;
+  }
 }
 
 .menu-view { width: 100%; }

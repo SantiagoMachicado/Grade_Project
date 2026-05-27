@@ -157,6 +157,29 @@ onMounted(() => {
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin-bottom: 2rem;
+  transition: max-width 0.3s ease;
+}
+
+@media (min-width: 860px) {
+  .profile-container {
+    max-width: 1000px;
+  }
+  .settings-form {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem !important;
+  }
+  .form-group:nth-child(3),
+  .success-msg,
+  .error-msg,
+  .action-footer {
+    grid-column: span 2;
+  }
+  .btn-primary {
+    width: 250px !important;
+    margin-left: auto;
+    display: block;
+  }
 }
 
 .menu-view {

@@ -17,8 +17,13 @@ async def chat_with_bot(
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        reply = await get_gemini_response(request.history, request.message, db)
-        return ChatResponse(response=reply)
+        reply, recommendations, redirect_query, not_found_doctor = await get_gemini_response(request.history, request.message, db)
+        return ChatResponse(
+            response=reply,
+            recommendations=recommendations,
+            redirect_query=redirect_query,
+            not_found_doctor=not_found_doctor
+        )
     except Exception as e:
         logging.error(f"Error en chat: {str(e)}")
         # If credentials are not set, LangChain will throw an error

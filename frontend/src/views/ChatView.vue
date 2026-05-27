@@ -56,6 +56,45 @@
               </button>
             </div>
 
+            <!-- RECOMMENDATION CARD (Doctors found) -->
+            <div class="recommendation-card" v-if="msg.recommendations && msg.recommendations.length > 0">
+              <div class="recommendation-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+                <span>Médicos Recomendados</span>
+              </div>
+              
+              <div class="recommendation-list">
+                <div v-for="doc in msg.recommendations" :key="doc.assignment_id" class="rec-doc-item">
+                  <img 
+                    :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${doc.doctor_name}&backgroundColor=e0f2fe&clothing=blazerAndShirt`" 
+                    alt="Avatar" 
+                    class="rec-avatar"
+                  />
+                  <div class="rec-details">
+                    <div class="rec-name">{{ doc.doctor_name.startsWith('Dr') ? '' : 'Dr. ' }}{{ doc.doctor_name }}</div>
+                    <div class="rec-specialty-clinic">
+                      <span class="rec-specialty">{{ doc.specialty }}</span>
+                      <span class="rec-separator">•</span>
+                      <span class="rec-clinic">{{ doc.clinic_name }}</span>
+                    </div>
+                    <div class="rec-fee" v-if="doc.consultation_fee">
+                      Consulta: Bs. {{ doc.consultation_fee }}
+                    </div>
+                  </div>
+                  <button class="btn-book-direct" @click="$router.push(`/patient/appointments/new/${doc.assignment_id}`)">
+                    Reservar
+                  </button>
+                </div>
+                
+                <div class="rec-more-option" v-if="msg.redirectQuery">
+                  <button class="btn-search-more" @click="goToBuscador(msg.redirectQuery)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Ver todos en el buscador
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div class="timestamp">{{ msg.time || getCurrentTime() }} <svg v-if="msg.role==='user'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
           </div>
 
@@ -108,7 +147,13 @@
           ref="inputField"
           required 
         />
-        <button type="button" class="action-btn mic-btn" title="Voz (Demo)">
+        <button 
+          type="button" 
+          :class="['action-btn', 'mic-btn', { recording: isRecording }]" 
+          :title="isRecording ? 'Grabando... Haz clic para detener' : 'Grabar por voz'"
+          @click="toggleVoiceRecording"
+          :disabled="isTyping"
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
         </button>
         <button type="submit" class="action-btn send-btn" :disabled="isTyping || !newMessage.trim()">
@@ -145,6 +190,9 @@ const localHistory = ref([
 const newMessage = ref('')
 const isTyping = ref(false)
 const chatBox = ref(null)
+const isRecording = ref(false)
+let recognition = null
+let SpeechRecognition = null
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -157,6 +205,10 @@ const confirmAction = (action) => {
   if (action.type === 'map') {
     router.push({ path: '/map', query: { specialty: action.specialty } })
   }
+}
+
+const goToBuscador = (query) => {
+  router.push({ path: '/patient/appointments/new', query: query })
 }
 
 const sendSuggested = (text) => {
@@ -203,6 +255,8 @@ const sendMessage = async () => {
 
     let aiResponse = response.data.response;
     let actionObj = null;
+    let recommendations = response.data.recommendations;
+    let redirectQuery = response.data.redirect_query;
     
     // Check if the AI wants to redirect to the map
     const actionRegex = /\[ACTION:MAP:(.*?)\]/i;
@@ -217,7 +271,9 @@ const sendMessage = async () => {
       role: 'assistant', 
       content: aiResponse, 
       time: getCurrentTime(),
-      action: actionObj
+      action: actionObj,
+      recommendations: recommendations || [],
+      redirectQuery: redirectQuery || null
     })
     
   } catch (error) {
@@ -233,8 +289,83 @@ const sendMessage = async () => {
   }
 }
 
+const toggleVoiceRecording = () => {
+  if (typeof window !== 'undefined') {
+    const isSecure = window.location.protocol === 'https:' || 
+                     window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1';
+    if (!isSecure) {
+      alert('El reconocimiento de voz requiere un contexto seguro (HTTPS o localhost). Si estás accediendo por IP (ej: http://192.168.x.x), el navegador bloquea el micrófono por seguridad. Intenta acceder usando http://localhost:5173 o HTTPS.');
+      return;
+    }
+  }
+
+  if (!SpeechRecognition) {
+    alert('Tu navegador no soporta el reconocimiento de voz (SpeechRecognition). Te recomendamos usar Google Chrome o Microsoft Edge.');
+    return;
+  }
+
+  if (isRecording.value) {
+    console.log('Deteniendo reconocimiento de voz manualmente...');
+    recognition.stop()
+  } else {
+    try {
+      console.log('Iniciando reconocimiento de voz...');
+      recognition.start()
+    } catch (e) {
+      console.error('Failed to start recognition:', e)
+    }
+  }
+}
+
 onMounted(() => {
   scrollToBottom()
+
+  if (typeof window !== 'undefined') {
+    SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (SpeechRecognition) {
+      console.log('SpeechRecognition detectado e inicializado correctamente.');
+      recognition = new SpeechRecognition()
+      recognition.continuous = true
+      recognition.lang = 'es-ES'
+      recognition.interimResults = false
+
+      recognition.onstart = () => {
+        console.log('Grabación por voz iniciada...');
+        isRecording.value = true
+      }
+
+      recognition.onresult = (event) => {
+        let transcript = ''
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            transcript += event.results[i][0].transcript
+          }
+        }
+        if (transcript) {
+          console.log('Texto transcrito:', transcript);
+          newMessage.value = (newMessage.value ? newMessage.value.trim() + ' ' : '') + transcript.trim()
+        }
+      }
+
+      recognition.onend = () => {
+        console.log('Grabación por voz finalizada.');
+        isRecording.value = false
+      }
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error)
+        isRecording.value = false
+        if (event.error === 'not-allowed') {
+          alert('Permiso denegado para usar el micrófono. Por favor habilita el micrófono para este sitio en la barra de direcciones de tu navegador.');
+        } else if (event.error !== 'no-speech') {
+          alert(`Error en el reconocimiento de voz: ${event.error}`);
+        }
+      }
+    } else {
+      console.warn('SpeechRecognition no está soportado en este navegador.');
+    }
+  }
 })
 </script>
 
@@ -530,9 +661,184 @@ onMounted(() => {
 
 .mic-btn { color: #94a3b8; margin-right: 0.25rem; }
 .mic-btn:hover { color: #0284c7; background: #f1f5f9; }
+.mic-btn.recording {
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
 
 .send-btn { background: #004e98; color: white; }
 .send-btn:hover:not(:disabled) { background: #003a70; }
 .send-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+/* Recommendation Card styles */
+.recommendation-card {
+  margin-top: 0.75rem;
+  background: white;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  max-width: 380px;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.recommendation-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #0284c7; /* Blue accent */
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.recommendation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.rec-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.rec-doc-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+
+.rec-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #e0f2fe;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.rec-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.rec-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-specialty-clinic {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.rec-specialty {
+  color: #0ea5e9;
+  font-weight: 600;
+}
+
+.rec-separator {
+  color: #cbd5e1;
+}
+
+.rec-clinic {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.rec-fee {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.btn-book-direct {
+  background: #0284c7;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-book-direct:hover {
+  background: #0369a1;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.15);
+}
+
+.rec-more-option {
+  margin-top: 0.25rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 0.75rem;
+}
+
+.btn-search-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #0284c7;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-search-more:hover {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
 
 </style>

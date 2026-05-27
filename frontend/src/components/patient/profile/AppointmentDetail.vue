@@ -85,4 +85,19 @@ const getInitials = (name) => {
 .detail-section h4 { font-size: 0.8rem; font-weight: 800; color: #0f172a; margin: 0 0 0.75rem 0; }
 .detail-box { background: #f8fafc; padding: 1.25rem; border-radius: 12px; font-size: 0.9rem; color: #475569; line-height: 1.6; white-space: pre-wrap; }
 .notes-box { background: #fef2f2; color: #991b1b; border: 1px dashed #fca5a5; }
+
+@media (min-width: 860px) {
+  .detail-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2rem;
+    padding: 2.5rem;
+  }
+  .detail-doctor-header {
+    grid-column: span 2;
+  }
+  .detail-info-grid {
+    grid-column: span 2;
+  }
+}
 </style>

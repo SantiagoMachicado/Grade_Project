@@ -249,6 +249,7 @@ onMounted(() => {
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   position: relative;
+  transition: max-width 0.3s ease;
 }
 
 /* Header */
@@ -497,4 +498,23 @@ onMounted(() => {
 }
 .btn-danger:hover { background: #dc2626; }
 .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (min-width: 860px) {
+  .appointments-container {
+    max-width: 1000px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    min-height: 80vh;
+  }
+  .appointments-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .fab-btn {
+    right: calc(50% - 500px + 2rem) !important;
+  }
+}
 </style>

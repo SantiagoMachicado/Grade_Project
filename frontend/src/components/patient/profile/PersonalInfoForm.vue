@@ -24,6 +24,11 @@
         <input type="date" v-model="editForm.birth_date" class="form-input" />
       </div>
 
+      <div class="form-group full-width-field">
+        <label>Historial Médico (Alergias, Condiciones, etc.)</label>
+        <textarea v-model="editForm.medical_history" class="form-input form-textarea" rows="4"></textarea>
+      </div>
+
       <button class="btn btn-primary full-width" @click="saveProfile" :disabled="saving">
         {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
       </button>
@@ -101,4 +106,28 @@ const saveProfile = async () => {
 .btn-primary { background: #0284c7; color: white; }
 .btn-primary:hover { background: #0369a1; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+@media (min-width: 860px) {
+  .edit-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .form-group:first-child {
+    grid-column: span 2;
+  }
+  .form-group.full-width-field {
+    grid-column: span 2;
+  }
+  .btn {
+    grid-column: span 2;
+    margin-top: 0;
+  }
+}
 </style>

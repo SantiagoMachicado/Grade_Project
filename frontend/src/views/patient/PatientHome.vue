@@ -14,66 +14,71 @@
       </button>
     </div>
 
-    <!-- Main Question -->
-    <h2 class="main-question">¿En qué podemos<br>ayudarte hoy?</h2>
+    <div class="home-layout-grid">
+      <!-- Left Column: Navigation and Actions -->
+      <div class="left-column">
+        <h2 class="main-question">¿En qué podemos<br>ayudarte hoy?</h2>
 
-    <!-- Actions Grid -->
-    <div class="actions-grid">
-      <button class="action-card btn-cyan" @click="$router.push('/patient/appointments/new')">
-        <div class="icon-wrapper cyan-light">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <span>Buscar Médicos</span>
-      </button>
+        <div class="actions-grid">
+          <button class="action-card btn-cyan" @click="$router.push('/patient/appointments/new')">
+            <div class="icon-wrapper cyan-light">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <span>Buscar Médicos</span>
+          </button>
 
-      <button class="action-card btn-dark" @click="$router.push('/chat')">
-        <div class="icon-wrapper dark-light">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00d1b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
-        </div>
-        <span>Hablar con IA</span>
-      </button>
-    </div>
-
-    <!-- Upcoming Appointments -->
-    <div class="upcoming-section">
-      <div class="section-header">
-        <h3>Próximas citas</h3>
-        <button class="view-all-btn" @click="$router.push('/patient/appointments')">Ver todas</button>
-      </div>
-
-      <div v-if="loading" class="loading-state">
-        <div class="spinner"></div>
-      </div>
-      
-      <div v-else-if="upcomingAppointment" class="appointment-card">
-        <div class="doc-info">
-          <img class="doc-avatar" :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${upcomingAppointment.doctor?.full_name || 'Doc'}&backgroundColor=e2e8f0&clothing=blazerAndShirt`" alt="Doctor Avatar">
-          <div>
-            <h4>Dr. {{ upcomingAppointment.doctor?.full_name || 'No asignado' }}</h4>
-            <p class="specialty">{{ upcomingAppointment.doctor?.specialty || 'Medicina General' }}</p>
-          </div>
-        </div>
-
-        <div class="time-row">
-          <div class="time-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>{{ formatRelativeDay(upcomingAppointment.appointment_date) }}</span>
-          </div>
-          <div class="time-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span>{{ formatTime(upcomingAppointment.appointment_date) }}</span>
-          </div>
-        </div>
-
-        <div class="card-actions">
-          <button class="btn-reschedule" @click="$router.push('/patient/appointments/new')">Reagendar</button>
-          <button class="btn-details" @click="$router.push('/patient/profile?view=medical_history')">Ver detalles</button>
+          <button class="action-card btn-dark" @click="$router.push('/chat')">
+            <div class="icon-wrapper dark-light">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00d1b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+            </div>
+            <span>Hablar con IA</span>
+          </button>
         </div>
       </div>
 
-      <div v-else class="empty-appointment">
-        <p>No tienes citas próximas agendadas.</p>
-        <button class="btn-details" @click="$router.push('/patient/appointments/new')">Agendar ahora</button>
+      <!-- Right Column: Upcoming Appointments -->
+      <div class="right-column">
+        <div class="upcoming-section">
+          <div class="section-header">
+            <h3>Próximas citas</h3>
+            <button class="view-all-btn" @click="$router.push('/patient/appointments')">Ver todas</button>
+          </div>
+
+          <div v-if="loading" class="loading-state">
+            <div class="spinner"></div>
+          </div>
+          
+          <div v-else-if="upcomingAppointment" class="appointment-card">
+            <div class="doc-info">
+              <img class="doc-avatar" :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${upcomingAppointment.doctor?.full_name || 'Doc'}&backgroundColor=e2e8f0&clothing=blazerAndShirt`" alt="Doctor Avatar">
+              <div>
+                <h4>Dr. {{ upcomingAppointment.doctor?.full_name || 'No asignado' }}</h4>
+                <p class="specialty">{{ upcomingAppointment.doctor?.specialty || 'Medicina General' }}</p>
+              </div>
+            </div>
+
+            <div class="time-row">
+              <div class="time-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>{{ formatRelativeDay(upcomingAppointment.appointment_date) }}</span>
+              </div>
+              <div class="time-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>{{ formatTime(upcomingAppointment.appointment_date) }}</span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-reschedule" @click="$router.push('/patient/appointments/new')">Reagendar</button>
+              <button class="btn-details" @click="$router.push('/patient/profile?view=medical_history')">Ver detalles</button>
+            </div>
+          </div>
+
+          <div v-else class="empty-appointment">
+            <p>No tienes citas próximas agendadas.</p>
+            <button class="btn-details" @click="$router.push('/patient/appointments/new')">Agendar ahora</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -167,6 +172,35 @@ onMounted(() => {
   background: #ffffff;
   min-height: 80vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: max-width 0.3s ease;
+}
+
+@media (min-width: 860px) {
+  .home-container {
+    max-width: 1000px;
+    background: #fafafa;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+    padding: 2rem;
+  }
+  .home-layout-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .upcoming-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+  }
+  .appointment-card {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+  }
 }
 
 /* Header */

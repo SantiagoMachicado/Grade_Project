@@ -10,23 +10,27 @@ from sqlalchemy import select
 
 # U6: chat_service.py - Simular respuesta con acción de agendar (Mocking LangChain)
 @pytest.mark.asyncio
+@patch("app.services.chat_service.extract_search_preferences", new_callable=AsyncMock)
 @patch("app.services.chat_service.ChatGoogleGenerativeAI.ainvoke", new_callable=AsyncMock)
-async def test_u6_chat_service_agenda_intent(mock_ainvoke, db_session):
+async def test_u6_chat_service_agenda_intent(mock_ainvoke, mock_extract, db_session):
+    mock_extract.return_value = {"specialty": None, "clinic": None, "day_of_week": None, "doctor_name": None}
     # Simulamos que el LLM decide que es Cardiología
     mock_ainvoke.return_value = MagicMock(content="Te recomiendo un cardiólogo. [ACTION:MAP:Cardiología]")
     
-    response = await get_gemini_response([], "Me duele el pecho fuerte", db_session)
-    assert "[ACTION:MAP:Cardiología]" in response
+    reply, recs, redirect, not_found = await get_gemini_response([], "Me duele el pecho fuerte", db_session)
+    assert "[ACTION:MAP:Cardiología]" in reply
 
 # U7: chat_service.py - Información General sin acción
 @pytest.mark.asyncio
+@patch("app.services.chat_service.extract_search_preferences", new_callable=AsyncMock)
 @patch("app.services.chat_service.ChatGoogleGenerativeAI.ainvoke", new_callable=AsyncMock)
-async def test_u7_chat_service_general_info(mock_ainvoke, db_session):
+async def test_u7_chat_service_general_info(mock_ainvoke, mock_extract, db_session):
+    mock_extract.return_value = {"specialty": None, "clinic": None, "day_of_week": None, "doctor_name": None}
     mock_ainvoke.return_value = MagicMock(content="Hola, ¿en qué te puedo ayudar hoy?")
     
-    response = await get_gemini_response([], "Hola", db_session)
-    assert "[ACTION:MAP:" not in response
-    assert "ayudar hoy" in response
+    reply, recs, redirect, not_found = await get_gemini_response([], "Hola", db_session)
+    assert "[ACTION:MAP:" not in reply
+    assert "ayudar hoy" in reply
 
 # U8: email_service.py - Generar HTML de notificación correctamente sin error
 @patch("app.services.email_service.smtplib.SMTP")
@@ -91,3 +95,51 @@ async def test_u10_u11_u12_scheduler_flags(db_session):
             
             assert appt_3.notified_3h is True
             assert appt_3.notified_24h is True # Se marcan ambas por seguridad
+
+# U13: chat_service.py - Probar extracción de preferencias de búsqueda
+@pytest.mark.asyncio
+@patch("app.services.chat_service.ChatGoogleGenerativeAI.ainvoke", new_callable=AsyncMock)
+async def test_u13_extract_search_preferences(mock_ainvoke):
+    mock_ainvoke.return_value = MagicMock(content='{"specialty": "Cardiologia", "clinic": "Sur", "day_of_week": 1, "doctor_name": "Perez"}')
+    from app.services.chat_service import extract_search_preferences
+    prefs = await extract_search_preferences("Busco un cardiologo los martes en Clinica del Sur con Perez")
+    assert prefs["specialty"] == "Cardiologia"
+    assert prefs["clinic"] == "Sur"
+    assert prefs["day_of_week"] == 1
+    assert prefs["doctor_name"] == "Perez"
+
+# U14: chat_service.py - Probar find_recommendations con registros en la base de datos
+@pytest.mark.asyncio
+async def test_u14_find_recommendations_matching(db_session):
+    from app.models.user import User, Doctor, RoleEnum
+    from app.models.clinic import MedicalCenter, DoctorMedicalCenter
+    from app.core.security import get_password_hash
+    from app.services.chat_service import find_recommendations
+
+    user = User(email="testdoc@test.com", password_hash=get_password_hash("pass"), role=RoleEnum.DOCTOR)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    doc = Doctor(user_id=user.id, full_name="Alejandro Perez", specialty="Cardiologia", license_number="12345", consultation_fee=200.0)
+    center = MedicalCenter(name="Clinica del Sur", address="La Paz", phone="123456")
+    db_session.add(doc)
+    db_session.add(center)
+    await db_session.commit()
+    await db_session.refresh(doc)
+    await db_session.refresh(center)
+
+    assignment = DoctorMedicalCenter(doctor_id=user.id, center_id=center.id)
+    db_session.add(assignment)
+    await db_session.commit()
+    await db_session.refresh(assignment)
+
+    # Test 1: Búsqueda coincidente por nombre de doctor
+    recs = await find_recommendations(db_session, {"doctor_name": "Perez"})
+    assert len(recs) >= 1
+    assert any("Perez" in r.doctor.full_name for r in recs)
+
+    # Test 2: Búsqueda no coincidente
+    recs_empty = await find_recommendations(db_session, {"doctor_name": "InexistenteDoctorQueNoExiste123"})
+    assert len(recs_empty) == 0
+

@@ -219,6 +219,7 @@ onMounted(() => {
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   position: relative;
+  transition: max-width 0.3s ease;
 }
 
 /* Header */
@@ -382,18 +383,20 @@ onMounted(() => {
 /* Fixed Bottom Button */
 .fixed-bottom {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 75px; /* Elevated to sit nicely above the bottom nav */
+  left: 1rem;
+  right: 1rem;
   background: white;
-  padding: 1rem 1.5rem 1.5rem 1.5rem;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-  border-radius: 24px 24px 0 0;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-width: 480px;
+  max-width: 448px; /* 480px - margins */
   margin: 0 auto;
+  z-index: 990; /* Just below bottom nav (1000) */
+  transition: all 0.3s ease;
 }
 .booking-summary { text-align: center; color: #64748b; font-size: 0.85rem; }
 .book-btn {
@@ -413,4 +416,32 @@ onMounted(() => {
 .loading-state { text-align: center; padding: 4rem 0; }
 .spinner { width: 40px; height: 40px; border: 4px solid #f1f5f9; border-top: 4px solid #00bcd4; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+@media (min-width: 860px) {
+  .schedule-container {
+    max-width: 1000px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    min-height: 80vh;
+  }
+  
+  .content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1.8fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  
+  .profile-card {
+    margin-bottom: 0;
+  }
+  
+  .fixed-bottom {
+    max-width: 968px; /* 1000px - margins */
+    border-radius: 20px;
+    box-sizing: border-box;
+  }
+}
 </style>

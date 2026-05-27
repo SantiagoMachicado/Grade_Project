@@ -13,122 +13,124 @@
         <div class="spinner"></div>
       </div>
 
-      <div v-else class="profile-summary">
-        <div class="avatar-wrapper">
-          <div class="avatar-circle">
-            {{ getInitials(doctorName) }}
+      <div v-else class="settings-layout-grid">
+        <div class="profile-summary">
+          <div class="avatar-wrapper">
+            <div class="avatar-circle">
+              {{ getInitials(doctorName) }}
+            </div>
+            <button class="edit-avatar-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            </button>
           </div>
-          <button class="edit-avatar-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-          </button>
-        </div>
-        
-        <h3 class="patient-name">{{ doctorName }}</h3>
-        <p class="patient-email">{{ specialty }}</p>
-        <div class="patient-id-badge">ID: {{ licenseNumber }}</div>
-      </div>
-
-      <div class="menu-section" v-if="!loading">
-        <div class="section-label">PERFIL PROFESIONAL</div>
-        
-        <div class="menu-list">
-          <button class="menu-item" @click="$router.push('/doctor/settings/personal')">
-            <div class="menu-icon bg-blue">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="menu-text">
-              <h4>Información Personal</h4>
-              <p>Datos personales y contacto</p>
-            </div>
-            <div class="menu-arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </button>
-
-          <div class="menu-divider"></div>
-
-          <button class="menu-item" @click="$router.push('/doctor/settings/clinic')">
-            <div class="menu-icon bg-indigo">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            </div>
-            <div class="menu-text">
-              <h4>Datos de la Clínica</h4>
-              <p>Información del centro médico</p>
-            </div>
-            <div class="menu-arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </button>
-
-          <div class="menu-divider"></div>
-
-          <button class="menu-item" @click="$router.push('/doctor/settings/schedules')">
-            <div class="menu-icon bg-blue">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div class="menu-text">
-              <h4>Gestión de Horarios</h4>
-              <p>Disponibilidad por clínica</p>
-            </div>
-            <div class="menu-arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </button>
-        </div>
-
-        <div class="section-label">PREFERENCIAS Y AYUDA</div>
-        <div class="menu-list">
-          <button class="menu-item" @click="$router.push('/doctor/settings/notifications')">
-            <div class="menu-icon bg-gray">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-            </div>
-            <div class="menu-text">
-              <h4>Notificaciones</h4>
-              <p>Alertas de citas y mensajes</p>
-            </div>
-            <div class="menu-arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </button>
           
-          <div class="menu-divider"></div>
-
-          <button class="menu-item" @click="$router.push('/help-center')">
-            <div class="menu-icon bg-blue">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            </div>
-            <div class="menu-text">
-              <h4>Centro de Ayuda</h4>
-              <p>Soporte y preguntas frecuentes</p>
-            </div>
-            <div class="menu-arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </button>
-
-          <div class="menu-divider"></div>
-
-          <button class="menu-item" @click="$router.push('/doctor/settings/about')">
-            <div class="menu-icon bg-indigo">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            </div>
-            <div class="menu-text">
-              <h4>Acerca de la plataforma</h4>
-              <p>Versión y términos de uso</p>
-            </div>
-            <div class="menu-arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </button>
+          <h3 class="patient-name">{{ doctorName }}</h3>
+          <p class="patient-email">{{ specialty }}</p>
+          <div class="patient-id-badge">ID: {{ licenseNumber }}</div>
         </div>
 
-        <button class="logout-btn" @click="handleLogout">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Cerrar Sesión
-        </button>
+        <div class="menu-section">
+          <div class="section-label">PERFIL PROFESIONAL</div>
+          
+          <div class="menu-list">
+            <button class="menu-item" @click="$router.push('/doctor/settings/personal')">
+              <div class="menu-icon bg-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="menu-text">
+                <h4>Información Personal</h4>
+                <p>Datos personales y contacto</p>
+              </div>
+              <div class="menu-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
 
-        <div class="footer-version">
-          MEDICAL PLATFORM V1.0.0
+            <div class="menu-divider"></div>
+
+            <button class="menu-item" @click="$router.push('/doctor/settings/clinic')">
+              <div class="menu-icon bg-indigo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              </div>
+              <div class="menu-text">
+                <h4>Datos de la Clínica</h4>
+                <p>Información del centro médico</p>
+              </div>
+              <div class="menu-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+
+            <div class="menu-divider"></div>
+
+            <button class="menu-item" @click="$router.push('/doctor/settings/schedules')">
+              <div class="menu-icon bg-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="menu-text">
+                <h4>Gestión de Horarios</h4>
+                <p>Disponibilidad por clínica</p>
+              </div>
+              <div class="menu-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+          </div>
+
+          <div class="section-label">PREFERENCIAS Y AYUDA</div>
+          <div class="menu-list">
+            <button class="menu-item" @click="$router.push('/doctor/settings/notifications')">
+              <div class="menu-icon bg-gray">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              </div>
+              <div class="menu-text">
+                <h4>Notificaciones</h4>
+                <p>Alertas de citas y mensajes</p>
+              </div>
+              <div class="menu-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            
+            <div class="menu-divider"></div>
+
+            <button class="menu-item" @click="$router.push('/help-center')">
+              <div class="menu-icon bg-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+              <div class="menu-text">
+                <h4>Centro de Ayuda</h4>
+                <p>Soporte y preguntas frecuentes</p>
+              </div>
+              <div class="menu-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+
+            <div class="menu-divider"></div>
+
+            <button class="menu-item" @click="$router.push('/doctor/settings/about')">
+              <div class="menu-icon bg-indigo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              </div>
+              <div class="menu-text">
+                <h4>Acerca de la plataforma</h4>
+                <p>Versión y términos de uso</p>
+              </div>
+              <div class="menu-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+          </div>
+
+          <button class="logout-btn" @click="handleLogout">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Cerrar Sesión
+          </button>
+
+          <div class="footer-version">
+            MEDICAL PLATFORM V1.0.0
+          </div>
         </div>
       </div>
     </div>
@@ -199,6 +201,29 @@ onMounted(() => {
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin-bottom: 2rem;
+  transition: max-width 0.3s ease;
+}
+
+@media (min-width: 860px) {
+  .profile-container {
+    max-width: 1000px;
+  }
+  .settings-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.8fr;
+    gap: 2rem;
+    align-items: start;
+    padding: 1.5rem;
+  }
+  .profile-summary {
+    border-bottom: none !important;
+    border-right: 1px solid #f1f5f9;
+    padding-right: 2rem !important;
+    height: 100%;
+  }
+  .menu-section {
+    padding: 0 0 0 1rem !important;
+  }
 }
 .menu-view {
   width: 100%;

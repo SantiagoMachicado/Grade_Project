@@ -14,79 +14,81 @@
       <div class="spinner"></div>
     </div>
 
-    <div v-else-if="patient" class="profile-summary">
-      <div class="avatar-wrapper">
-        <div class="avatar-circle">
-          {{ getInitials(patient.full_name) }}
+    <div v-else-if="patient" class="profile-menu-grid">
+      <div class="profile-summary">
+        <div class="avatar-wrapper">
+          <div class="avatar-circle">
+            {{ getInitials(patient.full_name) }}
+          </div>
+          <button class="edit-avatar-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          </button>
         </div>
-        <button class="edit-avatar-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-        </button>
-      </div>
-      
-      <h3 class="patient-name">{{ patient.full_name }}</h3>
-      <p class="patient-email">{{ patient.user.email }}</p>
-      <div class="patient-id-badge">ID: {{ String(patient.user_id).padStart(8, '0') }}</div>
-    </div>
-
-    <div class="menu-section" v-if="!loading && patient">
-      <div class="section-label">CONFIGURACIÓN DE CUENTA</div>
-      
-      <div class="menu-list">
-        <!-- Información Personal -->
-        <button class="menu-item" @click="emit('navigate', 'personal_info')">
-          <div class="menu-icon bg-blue">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <div class="menu-text">
-            <h4>Información Personal</h4>
-            <p>Nombre, Teléfono, Fecha de Nacimiento</p>
-          </div>
-          <div class="menu-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
-        </button>
-
-        <div class="menu-divider"></div>
-
-        <!-- Historial Médico -->
-        <button class="menu-item" @click="emit('navigate', 'medical_history')">
-          <div class="menu-icon bg-indigo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-          </div>
-          <div class="menu-text">
-            <h4>Historial Médico</h4>
-            <p>Resumen de citas y diagnósticos</p>
-          </div>
-          <div class="menu-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
-        </button>
-
-        <div class="menu-divider"></div>
-
-        <!-- Notificaciones -->
-        <button class="menu-item" @click="emit('navigate', 'notifications')">
-          <div class="menu-icon bg-gray">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-          </div>
-          <div class="menu-text">
-            <h4>Notificaciones</h4>
-            <p>Alertas de citas y mensajes</p>
-          </div>
-          <div class="menu-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
-        </button>
+        
+        <h3 class="patient-name">{{ patient.full_name }}</h3>
+        <p class="patient-email">{{ patient.user.email }}</p>
+        <div class="patient-id-badge">ID: {{ String(patient.user_id).padStart(8, '0') }}</div>
       </div>
 
-      <button class="logout-btn" @click="emit('logout')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Cerrar Sesión
-      </button>
+      <div class="menu-section">
+        <div class="section-label">CONFIGURACIÓN DE CUENTA</div>
+        
+        <div class="menu-list">
+          <!-- Información Personal -->
+          <button class="menu-item" @click="emit('navigate', 'personal_info')">
+            <div class="menu-icon bg-blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="menu-text">
+              <h4>Información Personal</h4>
+              <p>Nombre, Teléfono, Fecha de Nacimiento</p>
+            </div>
+            <div class="menu-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </div>
+          </button>
 
-      <div class="footer-version">
-        HOSPITAL CONNECT V1.0.0
+          <div class="menu-divider"></div>
+
+          <!-- Historial Médico -->
+          <button class="menu-item" @click="emit('navigate', 'medical_history')">
+            <div class="menu-icon bg-indigo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+            </div>
+            <div class="menu-text">
+              <h4>Historial Médico</h4>
+              <p>Resumen de citas y diagnósticos</p>
+            </div>
+            <div class="menu-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </div>
+          </button>
+
+          <div class="menu-divider"></div>
+
+          <!-- Notificaciones -->
+          <button class="menu-item" @click="emit('navigate', 'notifications')">
+            <div class="menu-icon bg-gray">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            </div>
+            <div class="menu-text">
+              <h4>Notificaciones</h4>
+              <p>Alertas de citas y mensajes</p>
+            </div>
+            <div class="menu-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </div>
+          </button>
+        </div>
+
+        <button class="logout-btn" @click="emit('logout')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar Sesión
+        </button>
+
+        <div class="footer-version">
+          HOSPITAL CONNECT V1.0.0
+        </div>
       </div>
     </div>
   </div>
@@ -139,4 +141,23 @@ const getInitials = (name) => {
 .loading-state { text-align: center; padding: 4rem 0; color: #94a3b8; }
 .spinner { width: 40px; height: 40px; border: 4px solid #f1f5f9; border-top: 4px solid #0284c7; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+@media (min-width: 860px) {
+  .profile-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.8fr;
+    gap: 2rem;
+    align-items: start;
+    padding: 1.5rem;
+  }
+  .profile-summary {
+    border-bottom: none !important;
+    border-right: 1px solid #f1f5f9;
+    padding-right: 2rem !important;
+    height: 100%;
+  }
+  .menu-section {
+    padding: 0 0 0 1rem !important;
+  }
+}
 </style>

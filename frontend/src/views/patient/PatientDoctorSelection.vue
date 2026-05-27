@@ -12,58 +12,89 @@
       <p class="subtitle">Encuentra a los mejores especialistas para cuidar de tu salud.</p>
     </div>
 
-    <!-- Search / Filter Placeholder (Visual solo) -->
-    <div class="search-bar">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" v-model="searchQuery" placeholder="Buscar por especialidad o doctor..." class="search-input" />
-    </div>
+    <div class="selection-layout">
+      <!-- Left Sidebar: Filters -->
+      <div class="filters-sidebar">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" v-model="searchQuery" placeholder="Buscar por especialidad o doctor..." class="search-input" />
+        </div>
 
-    <!-- Specialty Chips -->
-    <div class="specialties-wrapper" v-if="uniqueSpecialties.length > 1">
-      <button 
-        v-for="spec in uniqueSpecialties" 
-        :key="spec"
-        :class="['chip', { active: selectedSpecialty === spec }]"
-        @click="selectedSpecialty = spec"
-      >
-        {{ spec }}
-      </button>
-    </div>
-
-    <!-- Content -->
-    <div v-if="isLoading" class="loading-state">
-      <div class="spinner"></div>
-    </div>
-    <div v-else-if="error" class="error-msg">{{ error }}</div>
-    
-    <div v-else class="doctors-list">
-      <div v-if="filteredAssignments.length === 0" class="empty-state">
-        <p>No hay doctores disponibles que coincidan con tu búsqueda o filtro.</p>
-      </div>
-
-      <div v-for="assign in filteredAssignments" :key="assign.id" class="doctor-card" @click="selectDoctor(assign.id)">
-        <div class="doc-header">
-          <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${assign.doctor?.full_name || 'Doc'}&backgroundColor=e2e8f0&clothing=blazerAndShirt`" alt="Avatar" class="avatar" />
-          <div class="doc-info">
-            <div class="name-row">
-              <h3>{{ assign.doctor?.full_name?.startsWith('Dr') ? '' : 'Dr. ' }}{{ assign.doctor?.full_name }}</h3>
-              <div class="rating">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                <span>4.9</span>
-              </div>
-            </div>
-            <p class="specialty">{{ assign.doctor?.specialty || 'General' }}</p>
+        <!-- Sort Controls -->
+        <div class="sort-container">
+          <span class="sort-title">Precio:</span>
+          <div class="sort-options">
+            <button 
+              :class="['sort-btn', { active: sortByPrice === 'asc' }]" 
+              @click="toggleSort('asc')"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+              Menor precio
+            </button>
+            <button 
+              :class="['sort-btn', { active: sortByPrice === 'desc' }]" 
+              @click="toggleSort('desc')"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+              Mayor precio
+            </button>
           </div>
         </div>
-        
-        <div class="doc-body">
-          <div class="info-row">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>{{ assign.center?.name }}</span>
+
+        <!-- Specialty Chips -->
+        <div class="specialties-section" v-if="uniqueSpecialties.length > 1">
+          <span class="sort-title specialty-title">Especialidades</span>
+          <div class="specialties-wrapper">
+            <button 
+              v-for="spec in uniqueSpecialties" 
+              :key="spec"
+              :class="['chip', { active: selectedSpecialty === spec }]"
+              @click="selectedSpecialty = spec"
+            >
+              {{ spec }}
+            </button>
           </div>
-          <div class="info-row fee" v-if="assign.doctor?.consultation_fee">
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-             <span>Consulta: Bs. {{ assign.doctor.consultation_fee }}</span>
+        </div>
+      </div>
+
+      <!-- Right Main Content: Doctors Grid -->
+      <div class="results-content">
+        <div v-if="isLoading" class="loading-state">
+          <div class="spinner"></div>
+        </div>
+        <div v-else-if="error" class="error-msg">{{ error }}</div>
+        
+        <div v-else class="doctors-list">
+          <div v-if="filteredAssignments.length === 0" class="empty-state">
+            <p>No hay doctores disponibles que coincidan con tu búsqueda o filtro.</p>
+          </div>
+
+          <div v-for="assign in filteredAssignments" :key="assign.id" class="doctor-card" @click="selectDoctor(assign.id)">
+            <div class="doc-header">
+              <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${assign.doctor?.full_name || 'Doc'}&backgroundColor=e2e8f0&clothing=blazerAndShirt`" alt="Avatar" class="avatar" />
+              <div class="doc-info">
+                <div class="name-row">
+                  <h3>{{ assign.doctor?.full_name?.startsWith('Dr') ? '' : 'Dr. ' }}{{ assign.doctor?.full_name }}</h3>
+                  <div class="rating">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>4.9</span>
+                  </div>
+                </div>
+                <p class="specialty">{{ assign.doctor?.specialty || 'General' }}</p>
+              </div>
+            </div>
+            
+            <div class="doc-body">
+              <div class="info-row">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{{ assign.center?.name }}</span>
+              </div>
+              <div class="info-row fee" v-if="assign.doctor?.consultation_fee">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                 <span>Consulta: Bs. {{ assign.doctor.consultation_fee }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -83,6 +114,15 @@ const isLoading = ref(true)
 const error = ref('')
 const searchQuery = ref('')
 const selectedSpecialty = ref('Todas')
+const sortByPrice = ref('none') // 'none', 'asc', 'desc'
+
+const toggleSort = (order) => {
+  if (sortByPrice.value === order) {
+    sortByPrice.value = 'none'
+  } else {
+    sortByPrice.value = order
+  }
+}
 
 const uniqueSpecialties = computed(() => {
   const specs = assignments.value.map(a => a.doctor?.specialty).filter(Boolean)
@@ -90,7 +130,7 @@ const uniqueSpecialties = computed(() => {
 })
 
 const filteredAssignments = computed(() => {
-  let filtered = assignments.value
+  let filtered = [...assignments.value]
 
   // Filtrar por especialidad primero
   if (selectedSpecialty.value !== 'Todas') {
@@ -106,6 +146,19 @@ const filteredAssignments = computed(() => {
       const center = (assign.center?.name || '').toLowerCase()
       
       return docName.includes(query) || specialty.includes(query) || center.includes(query)
+    })
+  }
+
+  // Ordenar por precio si está seleccionado
+  if (sortByPrice.value !== 'none') {
+    filtered.sort((a, b) => {
+      const priceA = Number(a.doctor?.consultation_fee || 0)
+      const priceB = Number(b.doctor?.consultation_fee || 0)
+      if (sortByPrice.value === 'asc') {
+        return priceA - priceB
+      } else {
+        return priceB - priceA
+      }
     })
   }
   
@@ -152,6 +205,7 @@ onMounted(() => {
   background: #f8fafc;
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: max-width 0.3s ease;
 }
 
 /* Header */
@@ -208,6 +262,54 @@ onMounted(() => {
   width: 100%;
   font-size: 0.95rem;
   color: #64748b;
+}
+
+/* Sort Controls */
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+}
+.sort-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.sort-options {
+  display: flex;
+  gap: 0.5rem;
+}
+.sort-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.sort-btn:hover {
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+.sort-btn.active {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+.sort-btn.active svg {
+  stroke: white;
 }
 
 /* Specialty Chips */
@@ -336,4 +438,80 @@ onMounted(() => {
 .loading-state { text-align: center; padding: 3rem 0; }
 .spinner { width: 30px; height: 30px; border: 3px solid #f1f5f9; border-top: 3px solid #00bcd4; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.specialty-title {
+  display: none;
+}
+
+@media (min-width: 860px) {
+  .selection-container {
+    max-width: 1000px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    min-height: 80vh;
+  }
+  
+  .selection-layout {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    gap: 2rem;
+    align-items: start;
+    margin-top: 1rem;
+  }
+  
+  .filters-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+  }
+  
+  .filters-sidebar .search-bar {
+    margin-bottom: 0;
+  }
+  
+  .filters-sidebar .sort-container {
+    margin-top: 0;
+    margin-bottom: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .specialties-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .specialties-section .specialty-title {
+    display: block;
+  }
+  
+  .specialties-section .specialties-wrapper {
+    flex-direction: column;
+    overflow-x: visible;
+    gap: 0.5rem;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  
+  .specialties-section .chip {
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
+  }
+  
+  .doctors-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+}
 </style>

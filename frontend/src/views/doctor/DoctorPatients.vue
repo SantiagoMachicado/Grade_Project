@@ -8,47 +8,116 @@
       </div>
 
       <div class="menu-section" style="padding-top: 1rem;">
-        <div v-if="loading" class="loading-state">
-          <div class="spinner"></div>
-        </div>
-
-        <div class="placeholder-content" v-else-if="appointments.length === 0">
-          <div class="empty-state">
-            <div class="empty-icon">🗂️</div>
-            <h3>Sin pacientes recientes</h3>
-            <p>Aquí aparecerán los pacientes de las citas Confirmadas o Completadas.</p>
-          </div>
-        </div>
-
-        <div class="menu-list" v-else>
-          <button 
-            v-for="appt in appointments" 
-            :key="appt.id" 
-            class="menu-item"
-            @click="openPatientModal(appt)"
-          >
-            <div class="menu-icon bg-blue" style="border-radius: 50%;">
-              {{ getInitials(appt.patient.full_name) }}
+        <div class="patients-layout-grid">
+          <!-- Left Column: Patient List -->
+          <div class="patients-list-pane">
+            <div v-if="loading" class="loading-state">
+              <div class="spinner"></div>
             </div>
-            <div class="menu-text">
-              <div class="patient-header-row">
-                <h4>{{ appt.patient.full_name }}</h4>
-                <span class="status-badge" :class="appt.status">
-                  {{ formatStatus(appt.status) }}
-                </span>
+
+            <div class="placeholder-content" v-else-if="appointments.length === 0">
+              <div class="empty-state">
+                <div class="empty-icon">🗂️</div>
+                <h3>Sin pacientes recientes</h3>
+                <p>Aquí aparecerán los pacientes de las citas Confirmadas o Completadas.</p>
               </div>
-              <p>{{ calculateAge(appt.patient.birth_date) }} años &bull; Visita: {{ formatDate(appt.appointment_date) }}</p>
             </div>
-            <div class="menu-arrow">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+
+            <div class="menu-list" v-else>
+              <button 
+                v-for="appt in appointments" 
+                :key="appt.id" 
+                class="menu-item"
+                :class="{ active: selectedAppt?.id === appt.id }"
+                @click="openPatientModal(appt)"
+              >
+                <div class="menu-icon bg-blue" style="border-radius: 50%;">
+                  {{ getInitials(appt.patient.full_name) }}
+                </div>
+                <div class="menu-text">
+                  <div class="patient-header-row">
+                    <h4>{{ appt.patient.full_name }}</h4>
+                    <span class="status-badge" :class="appt.status">
+                      {{ formatStatus(appt.status) }}
+                    </span>
+                  </div>
+                  <p>{{ calculateAge(appt.patient.birth_date) }} años &bull; Visita: {{ formatDate(appt.appointment_date) }}</p>
+                </div>
+                <div class="menu-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
+              </button>
             </div>
-          </button>
+          </div>
+
+          <!-- Right Column: Patient Details (Desktop inline panel) -->
+          <div class="patients-details-pane" v-if="isDesktop">
+            <div class="empty-detail-state" v-if="!selectedAppt">
+              <div class="empty-icon" style="font-size: 3rem;">👤</div>
+              <h4>Selecciona un paciente</h4>
+              <p>Haz clic en un paciente de la lista para ver su historial médico y redactar reportes.</p>
+            </div>
+            <div class="patient-detail-card" v-else>
+              <h3>Detalle de Consulta</h3>
+              <div class="patient-summary">
+                <div class="summary-avatar">{{ getInitials(selectedAppt.patient.full_name) }}</div>
+                <div>
+                  <h4>{{ selectedAppt.patient.full_name }}</h4>
+                  <p>{{ calculateAge(selectedAppt.patient.birth_date) }} años | 📞 {{ selectedAppt.patient.phone || 'No registrado' }}</p>
+                </div>
+              </div>
+
+              <div class="info-section">
+                <h5>Historial Médico del Paciente</h5>
+                <div class="info-box">{{ selectedAppt.patient.medical_history || 'Sin registros médicos previos.' }}</div>
+              </div>
+
+              <div class="info-section">
+                <h5>Motivo de la Cita</h5>
+                <div class="info-box">{{ selectedAppt.notes || 'No se proporcionaron notas.' }}</div>
+              </div>
+
+              <div class="info-section">
+                <h5>Reporte Médico / Diagnóstico</h5>
+                <textarea 
+                  v-model="editedReport" 
+                  placeholder="Escribe aquí el diagnóstico o tratamiento..."
+                  rows="4"
+                  class="report-textarea"
+                ></textarea>
+              </div>
+
+              <div class="detail-actions">
+                <button 
+                  v-if="selectedAppt.status === 'confirmada'" 
+                  class="btn btn-danger" 
+                  @click="markAsAbsent" 
+                  :disabled="saving">
+                  Ausente
+                </button>
+                <button 
+                  v-if="selectedAppt.status === 'confirmada'" 
+                  class="btn btn-success" 
+                  @click="saveAndFinalize" 
+                  :disabled="saving">
+                  {{ saving ? '...' : 'Finalizar' }}
+                </button>
+                <button 
+                  v-else 
+                  class="btn btn-primary" 
+                  @click="saveReport" 
+                  :disabled="saving">
+                  {{ saving ? '...' : 'Actualizar' }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal Detalle -->
-    <div class="modal-backdrop" v-if="selectedAppt" @click.self="closeModal">
+    <!-- Mobile Modal Detalle -->
+    <div class="modal-backdrop" v-if="!isDesktop && selectedAppt" @click.self="closeModal">
       <div class="modal-content">
         <div class="modal-header">
           <h3>Detalle de Consulta</h3>
@@ -118,7 +187,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 
 const appointments = ref([])
@@ -126,6 +195,11 @@ const loading = ref(true)
 const selectedAppt = ref(null)
 const editedReport = ref('')
 const saving = ref(false)
+const isDesktop = ref(false)
+
+const checkWidth = () => {
+  isDesktop.value = window.innerWidth >= 860
+}
 
 const fetchCompletedAppointments = async () => {
   loading.value = true
@@ -147,7 +221,13 @@ const fetchCompletedAppointments = async () => {
 }
 
 onMounted(() => {
+  checkWidth()
+  window.addEventListener('resize', checkWidth)
   fetchCompletedAppointments()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkWidth)
 })
 
 const getInitials = (name) => {
@@ -283,6 +363,64 @@ const markAsAbsent = async () => {
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin-bottom: 2rem;
+  transition: max-width 0.3s ease;
+}
+
+@media (min-width: 860px) {
+  .profile-container {
+    max-width: 1000px;
+  }
+  .patients-layout-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1.8fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  .patients-details-pane {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+  }
+  .menu-item.active {
+    background: #f0f9ff;
+    border-left: 4px solid #0284c7;
+  }
+  .empty-detail-state {
+    text-align: center;
+    padding: 6rem 2rem;
+    color: #94a3b8;
+  }
+  .empty-detail-state h4 {
+    margin: 1rem 0 0.5rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .empty-detail-state p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .patient-detail-card h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 0.75rem;
+  }
+  .detail-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    justify-content: flex-end;
+  }
+  .detail-actions .btn {
+    flex: none;
+    min-width: 120px;
+  }
 }
 .menu-view { width: 100%; }
 .top-header { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; background: white; border-bottom: 1px solid #f1f5f9; }

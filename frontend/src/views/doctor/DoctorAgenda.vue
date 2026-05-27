@@ -8,50 +8,52 @@
       </div>
 
       <div class="menu-section" style="padding-top: 1rem;">
-        <!-- Date Selector -->
-        <div class="date-selector">
-          <div 
-            v-for="day in next7Days" 
-            :key="day.dateStr"
-            :class="['day-item', { active: selectedDate === day.dateStr }]"
-            @click="selectDate(day.dateStr)"
-          >
-            <span class="day-name">{{ day.dayName }}</span>
-            <span class="day-number">{{ day.dayNumber }}</span>
+        <div class="agenda-grid">
+          <!-- Date Selector -->
+          <div class="date-selector">
+            <div 
+              v-for="day in next7Days" 
+              :key="day.dateStr"
+              :class="['day-item', { active: selectedDate === day.dateStr }]"
+              @click="selectDate(day.dateStr)"
+            >
+              <span class="day-name">{{ day.dayName }}</span>
+              <span class="day-number">{{ day.dayNumber }}</span>
+            </div>
           </div>
-        </div>
 
-        <!-- Timeline -->
-        <div class="timeline-container">
-          <div v-if="isLoading" class="loading-state">
-            <div class="spinner"></div>
-          </div>
-          <div v-else-if="slots.length === 0" class="empty-state">
-            <div class="empty-icon">🏖️</div>
-            <p>No tienes turnos programados para este día.</p>
-          </div>
-          <div v-else class="timeline">
-            <div v-for="(slot, index) in slots" :key="index" class="timeline-row">
-              <div class="time-column">{{ slot.time }}</div>
-              
-              <div class="card-column">
-                <!-- Available Slot -->
-                <div v-if="slot.type === 'available'" class="slot-card available-card">
-                  <span class="center-text">{{ slot.center ? slot.center.name : '' }}</span>
-                  <span class="status-text">Espacio Disponible</span>
-                </div>
+          <!-- Timeline -->
+          <div class="timeline-container">
+            <div v-if="isLoading" class="loading-state">
+              <div class="spinner"></div>
+            </div>
+            <div v-else-if="slots.length === 0" class="empty-state">
+              <div class="empty-icon">🏖️</div>
+              <p>No tienes turnos programados para este día.</p>
+            </div>
+            <div v-else class="timeline">
+              <div v-for="(slot, index) in slots" :key="index" class="timeline-row">
+                <div class="time-column">{{ slot.time }}</div>
                 
-                <!-- Appointment Slot -->
-                <div v-else class="slot-card appointment-card" :class="slot.appointment.status" @click="openActionModal(slot.appointment)">
-                  <div class="patient-info">
-                    <img :src="`https://ui-avatars.com/api/?name=${slot.appointment.patient?.full_name || 'Pac'}&background=e0f2fe&color=0284c7`" alt="Avatar" class="avatar" />
-                    <div class="details">
-                      <h4>{{ slot.appointment.patient?.full_name || 'Paciente' }}</h4>
-                      <p class="notes">{{ slot.appointment.notes || 'Consulta General' }}</p>
-                    </div>
+                <div class="card-column">
+                  <!-- Available Slot -->
+                  <div v-if="slot.type === 'available'" class="slot-card available-card">
+                    <span class="center-text">{{ slot.center ? slot.center.name : '' }}</span>
+                    <span class="status-text">Espacio Disponible</span>
                   </div>
-                  <div class="status-badge" :class="slot.appointment.status">
-                    {{ formatStatus(slot.appointment.status) }}
+                  
+                  <!-- Appointment Slot -->
+                  <div v-else class="slot-card appointment-card" :class="slot.appointment.status" @click="openActionModal(slot.appointment)">
+                    <div class="patient-info">
+                      <img :src="`https://ui-avatars.com/api/?name=${slot.appointment.patient?.full_name || 'Pac'}&background=e0f2fe&color=0284c7`" alt="Avatar" class="avatar" />
+                      <div class="details">
+                        <h4>{{ slot.appointment.patient?.full_name || 'Paciente' }}</h4>
+                        <p class="notes">{{ slot.appointment.notes || 'Consulta General' }}</p>
+                      </div>
+                    </div>
+                    <div class="status-badge" :class="slot.appointment.status">
+                      {{ formatStatus(slot.appointment.status) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -219,7 +221,52 @@ onMounted(() => {
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin-bottom: 2rem;
+  transition: max-width 0.3s ease;
 }
+
+@media (min-width: 860px) {
+  .profile-container {
+    max-width: 1000px;
+  }
+  
+  .agenda-grid {
+    display: grid;
+    grid-template-columns: 1fr 2.5fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .date-selector {
+    flex-direction: column !important;
+    overflow-x: visible !important;
+    gap: 0.5rem !important;
+    background: white;
+    padding: 1.25rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+  }
+
+  .day-item {
+    flex-direction: row !important;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.6rem 1rem !important;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+
+  .day-item.active .day-number {
+    box-shadow: none !important;
+  }
+
+  .day-number {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
 .menu-view { width: 100%; }
 .top-header { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; background: white; border-bottom: 1px solid #f1f5f9; }
 .header-title { margin: 0; font-size: 1.1rem; font-weight: 700; color: #1e293b; }
