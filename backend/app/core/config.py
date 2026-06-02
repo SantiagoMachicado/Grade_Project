@@ -4,7 +4,7 @@ from pydantic import Field
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Salud Digital Bolivia API"
     DATABASE_URL: str = Field(
-        default="postgresql+asyncpg://postgres:nimda@localhost:5434/salud_digital",
+        default="postgresql+asyncpg://user:password@localhost:5434/salud_digital",
         env="DATABASE_URL"
     )
     SECRET_KEY: str = Field(default="CHANGE_ME_IN_PRODUCTION", env="SECRET_KEY")
